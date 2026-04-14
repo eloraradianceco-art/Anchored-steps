@@ -45,7 +45,7 @@ function highlightKeywords(text, keywords) {
     return parts.map((part, i) => {
       if (validKws.some(kw => kw.toLowerCase() === part.toLowerCase())) {
         return (
-          <mark key={i} style={{background:"rgba(176,138,78,0.28)",color:"#F5F1E8",borderRadius:3,padding:"0 3px",fontStyle:"inherit",fontWeight:500}}>
+          <mark key={i} style={{background:"rgba(176,138,78,0.35)",color:darkMode?"#F5F1E8":"#2C2416",borderRadius:3,padding:"0 3px",fontStyle:"inherit",fontWeight:500}}>
             {part}
           </mark>
         );
@@ -695,7 +695,7 @@ export default function AnchoredSteps() {
   const INP = {width:"100%",background:T.inputBg,border:"1px solid "+T.inputBorder,borderRadius:12,color:T.text,fontSize:17,lineHeight:1.9,padding:"16px 18px",fontFamily:"EB Garamond,Georgia,serif",outline:"none",boxShadow:"inset 0 1px 0 rgba(255,255,255,0.02)"};
   const LBL = {fontSize:10,color:G.gold,letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:12,display:"block",fontFamily:"Cinzel,serif"};
   const kwList = week ? week.keywords.split(",").map(k => k.trim()) : [];
-  const crossRefs = CROSS_REFS[wk] || [];
+  const crossRefs = CROSS_REFS[String(wk)] || CROSS_REFS[wk] || [];
 
   return (
     <div style={{minHeight:"100vh",background:darkMode?"linear-gradient(155deg,#0F1A24 0%,#1A2A38 50%,#0F1A24 100%)":"linear-gradient(155deg,#F5F1E8 0%,#EDE5D4 50%,#F5F1E8 100%)"}}>
@@ -767,6 +767,10 @@ export default function AnchoredSteps() {
                                 <button onClick={() => startQuiz(s)} style={{background:entries.find(e=>e.field_key==="mem_"+s.ref)?"rgba(120,184,120,0.15)":G.purpleF,border:"1px solid "+(entries.find(e=>e.field_key==="mem_"+s.ref)?G.greenB:G.purpleB),color:entries.find(e=>e.field_key==="mem_"+s.ref)?G.green:G.purple,padding:"2px 10px",borderRadius:12,cursor:"pointer",fontSize:11,fontFamily:"Cinzel,serif"}}>
                                   {entries.find(e=>e.field_key==="mem_"+s.ref) ? "✓ Memorized" : "✦ Memorize"}
                                 </button>
+                                <button onClick={() => toggleBookmark(s, wk, "scripture")} style={{background:isBookmarked(s.ref,wk)?"rgba(176,138,78,0.2)":"transparent",border:"1px solid "+(isBookmarked(s.ref,wk)?"rgba(176,138,78,0.4)":G.border),color:isBookmarked(s.ref,wk)?G.gold:G.muted,padding:"2px 10px",borderRadius:12,cursor:"pointer",fontSize:13}}>
+                                  {isBookmarked(s.ref,wk) ? "★" : "☆"}
+                                </button>
+                                <button onClick={() => setShareVerse(s)} style={{background:"transparent",border:"1px solid "+G.border,color:G.muted,padding:"2px 8px",borderRadius:12,cursor:"pointer",fontSize:11}}>&#8599;</button>
                               </div>
                             </div>
                             {isOpen && ae && (
@@ -822,7 +826,7 @@ export default function AnchoredSteps() {
                         const entry = LEXICON[kw];
                         const active = lexWord === kw;
                         return (
-                          <button key={kw} onClick={() => setLexWord(active?null:kw)} style={{background:active?G.goldF:"rgba(255,255,255,0.04)",border:"1px solid "+(active?G.goldB:G.border),color:active?G.gold:G.text,padding:"7px 16px",borderRadius:20,cursor:entry?"pointer":"default",fontSize:15,fontFamily:"EB Garamond,Georgia,serif",fontStyle:"italic",transition:"all .25s",letterSpacing:"0.01em"}}>
+                          <button key={kw} onClick={() => setLexWord(active?null:kw)} style={{background:active?G.goldF:darkMode?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.06)",border:"1px solid "+(active?G.goldB:darkMode?G.border:"rgba(0,0,0,0.12)"),color:active?G.gold:darkMode?G.text:"#3D2E1A",padding:"7px 16px",borderRadius:20,cursor:entry?"pointer":"default",fontSize:15,fontFamily:"EB Garamond,Georgia,serif",fontStyle:"italic",transition:"all .25s",letterSpacing:"0.01em"}}>
                             {kw}{entry ? " ✦" : ""}
                           </button>
                         );
@@ -856,7 +860,7 @@ export default function AnchoredSteps() {
                         const crKey = wk + "_cr_" + i;
                         const crOpen = openCrossRef === crKey;
                         return (
-                          <div key={i} style={{borderLeft:"2px solid rgba(176,138,78,0.35)",paddingLeft:14,marginBottom:i<crossRefs.length-1?18:0,paddingBottom:i<crossRefs.length-1?18:0,borderBottom:i<crossRefs.length-1?"1px solid rgba(255,255,255,0.04)":"none"}}>
+                          <div key={i} style={{borderLeft:"2px solid "+(darkMode?"rgba(176,138,78,0.35)":"rgba(176,138,78,0.5)"),paddingLeft:14,marginBottom:i<crossRefs.length-1?18:0,paddingBottom:i<crossRefs.length-1?18:0,borderBottom:i<crossRefs.length-1?"1px solid "+(darkMode?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.08)"):"none"}}>
                             <p style={{fontSize:16,color:T.text,lineHeight:1.8,fontStyle:"italic",marginBottom:8}}>
                               {highlightKeywords(s.text, kwList)}
                             </p>
@@ -871,12 +875,6 @@ export default function AnchoredSteps() {
                                   {isBookmarked(s.ref,wk) ? "★" : "☆"}
                                 </button>
                                 <button onClick={() => setShareVerse(s)} style={{background:"transparent",border:"1px solid "+G.border,color:T.muted,padding:"2px 8px",borderRadius:12,cursor:"pointer",fontSize:11}}>&#8599;</button>
-                                <button onClick={() => toggleBookmark(s, wk, "scripture")} style={{background:isBookmarked(s.ref,wk)?"rgba(176,138,78,0.2)":"transparent",border:"1px solid "+(isBookmarked(s.ref,wk)?"rgba(176,138,78,0.4)":G.border),color:isBookmarked(s.ref,wk)?G.gold:G.muted,padding:"2px 10px",borderRadius:12,cursor:"pointer",fontSize:11}}>
-                                  {isBookmarked(s.ref,wk) ? "★" : "☆"}
-                                </button>
-                                <button onClick={() => setShareVerse(s)} style={{background:"transparent",border:"1px solid "+G.border,color:T.muted,padding:"2px 10px",borderRadius:12,cursor:"pointer",fontSize:11}}>
-                                  ↗
-                                </button>
                               </div>
                             </div>
                             {crOpen && s.context && (
