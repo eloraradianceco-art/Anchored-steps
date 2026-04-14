@@ -314,7 +314,7 @@ export default function AnchoredSteps() {
   const [communityDone, setCommunityDone] = useState(false);
   // Settings
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem("as_dark") !== "false");
-  const [fontSize, setFontSize] = useState(() => parseInt(localStorage.getItem("as_fontsize") || "16"));
+
   // Search
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -682,18 +682,17 @@ export default function AnchoredSteps() {
     muted:"#A8B3BC",border:"rgba(255,255,255,0.08)",cream:"#F5F1E8",
     cardBg:"linear-gradient(145deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))",
     inputBg:"rgba(255,255,255,0.035)",inputBorder:"rgba(176,138,78,0.18)",
+    headerBg:"rgba(15,26,36,0.88)",sectionTitle:"#F5F1E8",bodyText:"#E6DED0",
   } : {
-    bg:"#F5F1E8",bgCard:"rgba(0,0,0,0.04)",text:"#2C2416",
-    muted:"#8B7355",border:"rgba(0,0,0,0.1)",cream:"#1A1208",
-    cardBg:"linear-gradient(145deg,rgba(255,255,255,0.9),rgba(255,255,255,0.7))",
-    inputBg:"rgba(255,255,255,0.8)",inputBorder:"rgba(176,138,78,0.3)",
+    bg:"#F2EDE3",bgCard:"rgba(0,0,0,0.03)",text:"#2C2416",
+    muted:"#7A6248",border:"rgba(176,138,78,0.2)",cream:"#2C2416",
+    cardBg:"linear-gradient(145deg,rgba(255,255,255,0.95),rgba(255,255,255,0.8))",
+    inputBg:"rgba(255,255,255,0.9)",inputBorder:"rgba(176,138,78,0.35)",
+    headerBg:"rgba(242,237,227,0.95)",sectionTitle:"#2C2416",bodyText:"#3D2E1A",
   };
 
-  // Apply font size to body
-  document.body.style.fontSize = fontSize + "px";
-
   const week = ALL_WEEKS.find(w => w.week === wk);
-  const INP = {width:"100%",background:T.inputBg,border:"1px solid "+T.inputBorder,borderRadius:12,color:T.text,fontSize:fontSize+1,lineHeight:1.9,padding:"16px 18px",fontFamily:"EB Garamond,Georgia,serif",outline:"none",boxShadow:"inset 0 1px 0 rgba(255,255,255,0.02)"};
+  const INP = {width:"100%",background:T.inputBg,border:"1px solid "+T.inputBorder,borderRadius:12,color:T.text,fontSize:17,lineHeight:1.9,padding:"16px 18px",fontFamily:"EB Garamond,Georgia,serif",outline:"none",boxShadow:"inset 0 1px 0 rgba(255,255,255,0.02)"};
   const LBL = {fontSize:10,color:G.gold,letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:12,display:"block",fontFamily:"Cinzel,serif"};
   const kwList = week ? week.keywords.split(",").map(k => k.trim()) : [];
   const crossRefs = CROSS_REFS[wk] || [];
@@ -701,7 +700,7 @@ export default function AnchoredSteps() {
   return (
     <div style={{minHeight:"100vh",background:darkMode?"linear-gradient(155deg,#0F1A24 0%,#1A2A38 50%,#0F1A24 100%)":"linear-gradient(155deg,#F5F1E8 0%,#EDE5D4 50%,#F5F1E8 100%)"}}>
 
-      <header style={{position:"sticky",top:0,zIndex:100,background:"rgba(15,26,36,0.88)",backdropFilter:"blur(14px)",borderBottom:"1px solid rgba(176,138,78,0.14)"}}>
+      <header style={{position:"sticky",top:0,zIndex:100,background:T.headerBg || "rgba(15,26,36,0.88)",backdropFilter:"blur(14px)",borderBottom:"1px solid rgba(176,138,78,0.14)"}}>
         <div style={{borderBottom:"1px solid rgba(180,140,60,0.12)",padding:"10px 18px"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
             <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -715,9 +714,9 @@ export default function AnchoredSteps() {
             </div>
           </div>
         </div>
-        <div style={{display:"flex",justifyContent:"center",gap:4,padding:"7px 18px"}}>
+        <div style={{display:"flex",justifyContent:"center",gap:2,padding:"5px 12px",flexWrap:"nowrap",overflowX:"auto"}}>
           {[["journal","Journal"],["search","Search"],["bookmarks","Saved"],["contents","Contents"],["progress","Progress"],["settings","Settings"]].map(([v,l]) => (
-            <button key={v} onClick={() => setView(v)} style={{background:view===v?"linear-gradient(135deg,rgba(176,138,78,0.18),rgba(176,138,78,0.07))":"transparent",border:"1px solid "+(view===v?"rgba(176,138,78,0.4)":"transparent"),color:view===v?G.gold:G.muted,padding:"5px 12px",borderRadius:8,cursor:"pointer",fontSize:11,fontFamily:"Cinzel,serif",letterSpacing:"0.06em",transition:"all .2s"}}>{l}</button>
+            <button key={v} onClick={() => setView(v)} style={{background:view===v?"linear-gradient(135deg,rgba(176,138,78,0.18),rgba(176,138,78,0.07))":"transparent",border:"1px solid "+(view===v?"rgba(176,138,78,0.4)":"transparent"),color:view===v?G.gold:G.muted,padding:"4px 8px",borderRadius:6,cursor:"pointer",fontSize:10,fontFamily:"Cinzel,serif",letterSpacing:"0.04em",transition:"all .2s"}}>{l}</button>
           ))}
         </div>
       </header>
@@ -762,15 +761,7 @@ export default function AnchoredSteps() {
                           <div style={{flex:1}}>
                             <p style={{fontSize:19,lineHeight:1.95,color:G.cream,fontStyle:"italic",marginBottom:12,letterSpacing:"0.01em"}}>{s.text}</p>
                             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:8,marginBottom:ae?8:0}}>
-                              <div style={{display:"flex",alignItems:"center",gap:8}}>
-                                <span style={{fontSize:11,color:G.gold,fontFamily:"Cinzel,serif",fontWeight:500,letterSpacing:"0.08em",textTransform:"uppercase"}}>{s.ref}</span>
-                                <button onClick={() => {
-                                  const q = s.ref.replace(/\s*\([^)]+\)/g,"").trim();
-                                  window.open("https://www.bible.com/bible/116/"+encodeURIComponent(q.replace(/ /g,"."))+".NLT","_blank");
-                                }} style={{background:"transparent",border:"1px solid rgba(176,138,78,0.2)",color:G.muted,padding:"1px 8px",borderRadius:10,cursor:"pointer",fontSize:10,fontFamily:"Cinzel,serif"}}>
-                                  🎧 Hear
-                                </button>
-                              </div>
+                              <span style={{fontSize:11,color:G.gold,fontFamily:"Cinzel,serif",fontWeight:500,letterSpacing:"0.08em",textTransform:"uppercase"}}>{s.ref}</span>
                               <div style={{display:"flex",gap:6}}>
                                 {ae && <button onClick={() => setOpenAuthor(isOpen?null:ak)} style={{background:isOpen?"rgba(180,140,60,0.15)":G.goldF,border:"1px solid "+G.goldB,color:G.gold,padding:"2px 10px",borderRadius:12,cursor:"pointer",fontSize:11,fontFamily:"Cinzel,serif"}}>{isOpen?"▲ Hide":"▼ Context"}</button>}
                                 <button onClick={() => startQuiz(s)} style={{background:entries.find(e=>e.field_key==="mem_"+s.ref)?"rgba(120,184,120,0.15)":G.purpleF,border:"1px solid "+(entries.find(e=>e.field_key==="mem_"+s.ref)?G.greenB:G.purpleB),color:entries.find(e=>e.field_key==="mem_"+s.ref)?G.green:G.purple,padding:"2px 10px",borderRadius:12,cursor:"pointer",fontSize:11,fontFamily:"Cinzel,serif"}}>
@@ -1194,19 +1185,6 @@ export default function AnchoredSteps() {
                 </button>
               </div>
 
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <div>
-                  <div style={{fontSize:15,color:T.text,marginBottom:2}}>Font Size</div>
-                  <div style={{fontSize:12,color:G.muted}}>{fontSize}px</div>
-                </div>
-                <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                  <button onClick={() => { const n=Math.max(13,fontSize-1); setFontSize(n); localStorage.setItem("as_fontsize",String(n)); }}
-                    style={{background:"transparent",border:"1px solid "+T.border,color:T.text,width:32,height:32,borderRadius:8,cursor:"pointer",fontSize:16}}>−</button>
-                  <span style={{fontSize:14,color:T.text,fontFamily:"Cinzel,serif",minWidth:32,textAlign:"center"}}>{fontSize}</span>
-                  <button onClick={() => { const n=Math.min(22,fontSize+1); setFontSize(n); localStorage.setItem("as_fontsize",String(n)); }}
-                    style={{background:"transparent",border:"1px solid "+T.border,color:T.text,width:32,height:32,borderRadius:8,cursor:"pointer",fontSize:16}}>+</button>
-                </div>
-              </div>
             </div>
 
             {/* Referral */}
@@ -1297,16 +1275,20 @@ export default function AnchoredSteps() {
               <p style={{fontSize:10,color:G.muted,marginTop:6}}>— Anchored Steps · eloraradiance.com</p>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
-              <a href={"https://www.facebook.com/sharer/sharer.php?u="+encodeURIComponent("https://anchored-steps.vercel.app")+"&quote="+encodeURIComponent('"'+shareVerse.text+'" — '+shareVerse.ref+' | Anchored Steps')} target="_blank" rel="noreferrer"
-                style={{display:"block",background:"rgba(24,119,242,0.15)",border:"1px solid rgba(24,119,242,0.3)",borderRadius:10,padding:"12px",textAlign:"center",textDecoration:"none",color:"#4A9FFF",fontFamily:"Cinzel,serif",fontSize:12,letterSpacing:"0.06em"}}>
-                Facebook
-              </a>
               <button onClick={()=>{
-                const text = '"'+shareVerse.text+'" — '+shareVerse.ref+' | Anchored Steps · anchored-steps.vercel.app';
-                if(navigator.share){navigator.share({text});}
-                else{navigator.clipboard.writeText(text).then(()=>alert("Copied to clipboard!"));}
+                const text = shareVerse.text+" — "+shareVerse.ref+" | Anchored Steps";
+                navigator.clipboard.writeText(text).then(()=>alert("Copied to clipboard!"));
+              }} style={{background:"rgba(255,255,255,0.05)",border:"1px solid "+G.border,borderRadius:10,padding:"12px",cursor:"pointer",color:G.muted,fontFamily:"Cinzel,serif",fontSize:12,letterSpacing:"0.06em"}}>
+                Copy Text
+              </button>
+              <button onClick={()=>{
+                const text = "“"+shareVerse.text+"” — "+shareVerse.ref+"
+
+Anchored Steps · anchored-steps.vercel.app";
+                if(navigator.share){navigator.share({title:"Anchored Steps",text});}
+                else{navigator.clipboard.writeText(text).then(()=>alert("Copied!"));}
               }} style={{background:"linear-gradient(135deg,rgba(176,138,78,0.2),rgba(176,138,78,0.08))",border:"1px solid rgba(176,138,78,0.3)",borderRadius:10,padding:"12px",cursor:"pointer",color:G.gold,fontFamily:"Cinzel,serif",fontSize:12,letterSpacing:"0.06em"}}>
-                Instagram / Copy
+                Share ↗
               </button>
             </div>
             <button onClick={()=>setShareVerse(null)} style={{width:"100%",background:"transparent",border:"none",color:G.muted,cursor:"pointer",fontSize:13,fontFamily:"EB Garamond,Georgia,serif"}}>Close</button>
