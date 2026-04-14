@@ -80,6 +80,41 @@ function SaveBtn({onSave, flash}) {
 
 // ── AUTH SCREENS ──────────────────────────────────────────────────────────────
 
+function YearReview({ weeksComplete, versesMemorized, prayersWritten, totalDays, onClose, G }) {
+  return (
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:24,overflowY:"auto"}} onClick={onClose}>
+      <div style={{background:"linear-gradient(145deg,#0F1A24,#1A2A38)",border:"1px solid rgba(176,138,78,0.4)",borderRadius:20,padding:32,maxWidth:420,width:"100%",boxShadow:"0 20px 60px rgba(0,0,0,0.6)",maxHeight:"90vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
+        <div style={{textAlign:"center",marginBottom:24}}>
+          <img src="/icon.png" alt="" style={{width:56,height:56,borderRadius:14,marginBottom:12}}/>
+          <div style={{fontFamily:"Cinzel,serif",fontSize:11,color:G.gold,letterSpacing:"0.16em",textTransform:"uppercase",marginBottom:6}}>Your Year in Review</div>
+          <h2 style={{fontFamily:"Cinzel,serif",fontSize:22,color:G.cream,fontWeight:500,margin:0}}>52 Weeks of Faith</h2>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}>
+          {[[weeksComplete,"Weeks Completed","📖"],[versesMemorized,"Verses Memorized","✦"],[prayersWritten,"Prayers Written","🙏"],[totalDays,"Days Active","🔥"]].map(([val,lbl,icon],i)=>(
+            <div key={i} style={{background:"rgba(176,138,78,0.08)",border:"1px solid rgba(176,138,78,0.2)",borderRadius:12,padding:"18px 14px",textAlign:"center"}}>
+              <div style={{fontSize:24,marginBottom:6}}>{icon}</div>
+              <div style={{fontSize:28,fontWeight:600,color:G.cream,fontFamily:"Cinzel,serif",marginBottom:4}}>{val}</div>
+              <div style={{fontSize:11,color:G.muted,letterSpacing:"0.06em"}}>{lbl}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{background:"rgba(176,138,78,0.06)",border:"1px solid rgba(176,138,78,0.15)",borderRadius:12,padding:"18px",marginBottom:20,textAlign:"center"}}>
+          <p style={{fontSize:16,color:G.cream,fontStyle:"italic",lineHeight:1.8,margin:"0 0 10px"}}>&#8220;Well done, good and faithful servant.&#8221;</p>
+          <p style={{fontSize:11,color:G.gold,fontFamily:"Cinzel,serif",letterSpacing:"0.1em",margin:0,textTransform:"uppercase"}}>Matthew 25:21</p>
+        </div>
+        <button onClick={() => {
+          const text = "I just completed 52 weeks of Anchored Steps — a year of faith, Scripture, and intentional time with God. " + weeksComplete + " weeks. " + versesMemorized + " verses memorized. " + prayersWritten + " prayers written. Walk steadily. Stay anchored. anchored-steps.vercel.app";
+          if(navigator.share){ navigator.share({text}); }
+          else { navigator.clipboard.writeText(text).then(()=>alert("Copied!")); }
+        }} style={{width:"100%",background:"linear-gradient(135deg,rgba(176,138,78,0.3),rgba(176,138,78,0.12))",border:"1px solid rgba(176,138,78,0.45)",color:G.gold,padding:"13px",borderRadius:10,cursor:"pointer",fontSize:13,fontFamily:"Cinzel,serif",letterSpacing:"0.08em",marginBottom:10}}>
+          Share Your Achievement ↗
+        </button>
+        <button onClick={onClose} style={{width:"100%",background:"transparent",border:"none",color:G.muted,cursor:"pointer",fontSize:13,fontFamily:"EB Garamond,Georgia,serif"}}>Close</button>
+      </div>
+    </div>
+  );
+}
+
 function AuthScreen({onAuth}) {
   const [screen, setScreen] = useState("login"); // login | signup | code
   const [email, setEmail] = useState("");
@@ -1241,46 +1276,11 @@ export default function AnchoredSteps() {
       {/* Year in Review Modal */}
       {showYearReview && (() => {
         const totalEntries = entries.length;
-        const weeksComplete = ALL_WEEKS.filter(w => {
-          return entries.some(e => e.week === w.week && (e.field_value||"").trim());
-        }).length;
+        const weeksComplete = ALL_WEEKS.filter(w => entries.some(e => e.week === w.week && (e.field_value||"").trim())).length;
         const versesMemorized = entries.filter(e => e.field_key.startsWith("mem_") && e.field_value === "1").length;
         const prayersWritten = entries.filter(e => e.field_key === "prayer" && (e.field_value||"").trim()).length;
         const totalDays = entries.filter(e => e.field_key.startsWith("day_")).length;
-        return (
-          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:24,overflowY:"auto"}} onClick={()=>setShowYearReview(false)}>
-            <div style={{background:"linear-gradient(145deg,#0F1A24,#1A2A38)",border:"1px solid rgba(176,138,78,0.4)",borderRadius:20,padding:32,maxWidth:420,width:"100%",boxShadow:"0 20px 60px rgba(0,0,0,0.6)",maxHeight:"90vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
-              <div style={{textAlign:"center",marginBottom:24}}>
-                <img src="/icon.png" alt="" style={{width:56,height:56,borderRadius:14,marginBottom:12}}/>
-                <div style={{fontFamily:"Cinzel,serif",fontSize:11,color:G.gold,letterSpacing:"0.16em",textTransform:"uppercase",marginBottom:6}}>Your Year in Review</div>
-                <h2 style={{fontFamily:"Cinzel,serif",fontSize:22,color:G.cream,fontWeight:500,margin:0}}>52 Weeks of Faith</h2>
-              </div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}>
-                {[[weeksComplete,"Weeks Completed","📖"],[versesMemorized,"Verses Memorized","✦"],[prayersWritten,"Prayers Written","🙏"],[totalDays,"Days Active","🔥"]].map(([val,lbl,icon],i)=>(
-                  <div key={i} style={{background:"rgba(176,138,78,0.08)",border:"1px solid rgba(176,138,78,0.2)",borderRadius:12,padding:"18px 14px",textAlign:"center"}}>
-                    <div style={{fontSize:24,marginBottom:6}}>{icon}</div>
-                    <div style={{fontSize:28,fontWeight:600,color:G.cream,fontFamily:"Cinzel,serif",marginBottom:4}}>{val}</div>
-                    <div style={{fontSize:11,color:G.muted,letterSpacing:"0.06em"}}>{lbl}</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{background:"rgba(176,138,78,0.06)",border:"1px solid rgba(176,138,78,0.15)",borderRadius:12,padding:"18px",marginBottom:20,textAlign:"center"}}>
-                <p style={{fontSize:16,color:G.cream,fontStyle:"italic",lineHeight:1.8,margin:"0 0 10px"}}>
-                  &#8220;Well done, good and faithful servant.&#8221;
-                </p>
-                <p style={{fontSize:11,color:G.gold,fontFamily:"Cinzel,serif",letterSpacing:"0.1em",margin:0,textTransform:"uppercase"}}>Matthew 25:21</p>
-              </div>
-              <button onClick={() => {
-                const text = "I just completed 52 weeks of Anchored Steps — a year of faith, Scripture, and intentional time with God. " + weeksComplete + " weeks. " + versesMemorized + " verses memorized. " + prayersWritten + " prayers written. Walk steadily. Stay anchored. anchored-steps.vercel.app";
-                if(navigator.share){ navigator.share({text}); }
-                else { navigator.clipboard.writeText(text).then(()=>alert("Copied!")); }
-              }} style={{width:"100%",background:"linear-gradient(135deg,rgba(176,138,78,0.3),rgba(176,138,78,0.12))",border:"1px solid rgba(176,138,78,0.45)",color:G.gold,padding:"13px",borderRadius:10,cursor:"pointer",fontSize:13,fontFamily:"Cinzel,serif",letterSpacing:"0.08em",marginBottom:10}}>
-                Share Your Achievement ↗
-              </button>
-              <button onClick={()=>setShowYearReview(false)} style={{width:"100%",background:"transparent",border:"none",color:G.muted,cursor:"pointer",fontSize:13,fontFamily:"EB Garamond,Georgia,serif"}}>Close</button>
-            </div>
-          </div>
-        );
+        return <YearReview weeksComplete={weeksComplete} versesMemorized={versesMemorized} prayersWritten={prayersWritten} totalDays={totalDays} onClose={()=>setShowYearReview(false)} G={G} />;
       })()}
 
       {/* Share Verse Modal */}
