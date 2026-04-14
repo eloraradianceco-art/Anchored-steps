@@ -28,7 +28,7 @@ const G = {
   cream:"#F5F1E8",text:"#E6DED0",muted:"#A8B3BC",dim:"#6C7A86",border:"rgba(255,255,255,0.06)",
 };
 
-const INP_STYLE = {width:"100%",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:8,color:T.cream,fontSize:16,padding:"12px 14px",outline:"none",fontFamily:"EB Garamond,Georgia,serif",marginBottom:12};
+const INP_STYLE = {width:"100%",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:8,color:G.cream,fontSize:16,padding:"12px 14px",outline:"none",fontFamily:"EB Garamond,Georgia,serif",marginBottom:12};
 const LBL_STYLE = {fontSize:10,color:G.gold,letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:8,display:"block",fontFamily:"Cinzel,serif"};
 
 function todayStr() { return new Date().toISOString().split("T")[0]; }
@@ -87,19 +87,19 @@ function YearReview({ weeksComplete, versesMemorized, prayersWritten, totalDays,
         <div style={{textAlign:"center",marginBottom:24}}>
           <img src="/icon.png" alt="" style={{width:56,height:56,borderRadius:14,marginBottom:12}}/>
           <div style={{fontFamily:"Cinzel,serif",fontSize:11,color:G.gold,letterSpacing:"0.16em",textTransform:"uppercase",marginBottom:6}}>Your Year in Review</div>
-          <h2 style={{fontFamily:"Cinzel,serif",fontSize:22,color:T.cream,fontWeight:500,margin:0}}>52 Weeks of Faith</h2>
+          <h2 style={{fontFamily:"Cinzel,serif",fontSize:22,color:G.cream,fontWeight:500,margin:0}}>52 Weeks of Faith</h2>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}>
           {[[weeksComplete,"Weeks Completed","📖"],[versesMemorized,"Verses Memorized","✦"],[prayersWritten,"Prayers Written","🙏"],[totalDays,"Days Active","🔥"]].map(([val,lbl,icon],i)=>(
             <div key={i} style={{background:"rgba(176,138,78,0.08)",border:"1px solid rgba(176,138,78,0.2)",borderRadius:12,padding:"18px 14px",textAlign:"center"}}>
               <div style={{fontSize:24,marginBottom:6}}>{icon}</div>
-              <div style={{fontSize:28,fontWeight:600,color:T.cream,fontFamily:"Cinzel,serif",marginBottom:4}}>{val}</div>
-              <div style={{fontSize:11,color:T.muted,letterSpacing:"0.06em"}}>{lbl}</div>
+              <div style={{fontSize:28,fontWeight:600,color:G.cream,fontFamily:"Cinzel,serif",marginBottom:4}}>{val}</div>
+              <div style={{fontSize:11,color:G.muted,letterSpacing:"0.06em"}}>{lbl}</div>
             </div>
           ))}
         </div>
         <div style={{background:"rgba(176,138,78,0.06)",border:"1px solid rgba(176,138,78,0.15)",borderRadius:12,padding:"18px",marginBottom:20,textAlign:"center"}}>
-          <p style={{fontSize:16,color:T.cream,fontStyle:"italic",lineHeight:1.8,margin:"0 0 10px"}}>&#8220;Well done, good and faithful servant.&#8221;</p>
+          <p style={{fontSize:16,color:G.cream,fontStyle:"italic",lineHeight:1.8,margin:"0 0 10px"}}>&#8220;Well done, good and faithful servant.&#8221;</p>
           <p style={{fontSize:11,color:G.gold,fontFamily:"Cinzel,serif",letterSpacing:"0.1em",margin:0,textTransform:"uppercase"}}>Matthew 25:21</p>
         </div>
         <button onClick={() => {
@@ -109,7 +109,7 @@ function YearReview({ weeksComplete, versesMemorized, prayersWritten, totalDays,
         }} style={{width:"100%",background:"linear-gradient(135deg,rgba(176,138,78,0.3),rgba(176,138,78,0.12))",border:"1px solid rgba(176,138,78,0.45)",color:G.gold,padding:"13px",borderRadius:10,cursor:"pointer",fontSize:13,fontFamily:"Cinzel,serif",letterSpacing:"0.08em",marginBottom:10}}>
           Share Your Achievement ↗
         </button>
-        <button onClick={onClose} style={{width:"100%",background:"transparent",border:"none",color:T.muted,cursor:"pointer",fontSize:13,fontFamily:"EB Garamond,Georgia,serif"}}>Close</button>
+        <button onClick={onClose} style={{width:"100%",background:"transparent",border:"none",color:G.muted,cursor:"pointer",fontSize:13,fontFamily:"EB Garamond,Georgia,serif"}}>Close</button>
       </div>
     </div>
   );
@@ -129,7 +129,7 @@ function AuthScreen({onAuth}) {
     minHeight:"100vh",
     background:"linear-gradient(155deg,#0F1A24 0%,#1A2A38 55%,#0F1A24 100%)",
     display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
-    padding:"24px",fontFamily:"EB Garamond,Georgia,serif",color:T.text,
+    padding:"24px",fontFamily:"EB Garamond,Georgia,serif",color:G.text,
     ...style
   });
 
@@ -198,10 +198,10 @@ function AuthScreen({onAuth}) {
   if (screen === "login") return (
     <div style={wrap()}>
       <div style={{fontSize:36,color:G.gold,marginBottom:12}}><img src="/icon.png" alt="⚓" style={{width:56,height:56,borderRadius:12,boxShadow:"0 4px 16px rgba(0,0,0,0.25)"}}/></div>
-      <div style={{fontFamily:"Cinzel,serif",fontSize:22,fontWeight:600,color:T.cream,marginBottom:4}}>Anchored Steps</div>
-      <div style={{fontSize:12,color:T.muted,letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:28}}>52 Weeks of Faith in Action</div>
+      <div style={{fontFamily:"Cinzel,serif",fontSize:22,fontWeight:600,color:G.cream,marginBottom:4}}>Anchored Steps</div>
+      <div style={{fontSize:12,color:G.muted,letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:28}}>52 Weeks of Faith in Action</div>
       <div style={card}>
-        <div style={{fontFamily:"Cinzel,serif",fontSize:14,color:T.cream,marginBottom:20,textAlign:"center",letterSpacing:"0.06em"}}>Sign In</div>
+        <div style={{fontFamily:"Cinzel,serif",fontSize:14,color:G.cream,marginBottom:20,textAlign:"center",letterSpacing:"0.06em"}}>Sign In</div>
         {error && <p style={{fontSize:12,color:G.red,marginBottom:12,textAlign:"center"}}>{error}</p>}
         {msg && <p style={{fontSize:12,color:G.green,marginBottom:12,textAlign:"center"}}>{msg}</p>}
         <label style={LBL_STYLE}>Email</label>
@@ -210,18 +210,18 @@ function AuthScreen({onAuth}) {
         <input value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••" type="password" style={INP_STYLE} onKeyDown={e=>e.key==="Enter"&&handleLogin()} />
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16}}>
           <input type="checkbox" id="stay" checked={stayIn} onChange={e=>setStayIn(e.target.checked)} />
-          <label htmlFor="stay" style={{fontSize:13,color:T.muted,cursor:"pointer"}}>Stay signed in</label>
+          <label htmlFor="stay" style={{fontSize:13,color:G.muted,cursor:"pointer"}}>Stay signed in</label>
         </div>
         <button onClick={handleLogin} disabled={loading} style={{width:"100%",background:"linear-gradient(135deg,rgba(180,140,60,0.3),rgba(180,140,60,0.15))",border:"1px solid "+G.goldB,color:G.gold,padding:"12px",borderRadius:8,cursor:"pointer",fontSize:14,fontFamily:"Cinzel,serif",letterSpacing:"0.1em",marginBottom:12}}>
           {loading ? "Signing in..." : "Sign In"}
         </button>
-        <div style={{textAlign:"center",fontSize:13,color:T.muted,marginBottom:12}}>
+        <div style={{textAlign:"center",fontSize:13,color:G.muted,marginBottom:12}}>
           <span onClick={handleReset} style={{color:G.gold,cursor:"pointer",textDecoration:"none"}}>Forgot password?</span>
         </div>
-        <button onClick={()=>{setScreen("signup");setError("");}} style={{width:"100%",background:"transparent",border:"1px solid rgba(176,138,78,0.25)",color:T.text,padding:"11px",borderRadius:8,cursor:"pointer",fontSize:14,fontFamily:"EB Garamond,Georgia,serif",marginBottom:10,transition:"all .2s"}}>
+        <button onClick={()=>{setScreen("signup");setError("");}} style={{width:"100%",background:"transparent",border:"1px solid rgba(176,138,78,0.25)",color:G.text,padding:"11px",borderRadius:8,cursor:"pointer",fontSize:14,fontFamily:"EB Garamond,Georgia,serif",marginBottom:10,transition:"all .2s"}}>
           Create Account
         </button>
-        <button onClick={()=>setScreen("plans")} style={{width:"100%",background:"transparent",border:"1px solid rgba(255,255,255,0.06)",color:T.muted,padding:"11px",borderRadius:8,cursor:"pointer",fontSize:13,fontFamily:"EB Garamond,Georgia,serif",transition:"all .2s"}}>
+        <button onClick={()=>setScreen("plans")} style={{width:"100%",background:"transparent",border:"1px solid rgba(255,255,255,0.06)",color:G.muted,padding:"11px",borderRadius:8,cursor:"pointer",fontSize:13,fontFamily:"EB Garamond,Georgia,serif",transition:"all .2s"}}>
           View Plans &#8594;
         </button>
       </div>
@@ -231,28 +231,28 @@ function AuthScreen({onAuth}) {
   if (screen === "plans") return (
     <div style={wrap()}>
       <img src="/icon.png" alt="Anchored Steps" style={{width:56,height:56,marginBottom:12,borderRadius:12,boxShadow:"0 4px 16px rgba(0,0,0,0.2)"}}/>
-      <div style={{fontFamily:"Cinzel,serif",fontSize:20,fontWeight:600,color:T.cream,marginBottom:4}}>Choose Your Plan</div>
-      <div style={{fontSize:13,color:T.muted,fontStyle:"italic",marginBottom:28,textAlign:"center"}}>Subscribe to receive your access code instantly by email.</div>
+      <div style={{fontFamily:"Cinzel,serif",fontSize:20,fontWeight:600,color:G.cream,marginBottom:4}}>Choose Your Plan</div>
+      <div style={{fontSize:13,color:G.muted,fontStyle:"italic",marginBottom:28,textAlign:"center"}}>Subscribe to receive your access code instantly by email.</div>
       <div style={{width:"100%",maxWidth:400}}>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}>
           <a href="https://buy.stripe.com/28E4gyfDSfG69KLgQj57W04" target="_blank" rel="noreferrer" style={{textDecoration:"none",display:"block",background:"linear-gradient(145deg,rgba(176,138,78,0.1),rgba(176,138,78,0.04))",border:"1px solid rgba(176,138,78,0.28)",borderRadius:14,padding:"24px 16px",textAlign:"center"}}>
             <div style={{fontFamily:"Cinzel,serif",fontSize:12,color:G.gold,letterSpacing:"0.1em",marginBottom:10}}>Monthly</div>
-            <div style={{fontSize:32,fontWeight:600,color:T.cream,fontFamily:"Cinzel,serif",marginBottom:4}}>$5.50</div>
-            <div style={{fontSize:12,color:T.muted,marginBottom:16}}>per month</div>
+            <div style={{fontSize:32,fontWeight:600,color:G.cream,fontFamily:"Cinzel,serif",marginBottom:4}}>$5.50</div>
+            <div style={{fontSize:12,color:G.muted,marginBottom:16}}>per month</div>
             <div style={{background:"rgba(176,138,78,0.2)",border:"1px solid rgba(176,138,78,0.3)",borderRadius:8,padding:"10px",fontSize:13,color:G.gold,fontFamily:"EB Garamond,Georgia,serif"}}>Subscribe &#8594;</div>
           </a>
           <a href="https://buy.stripe.com/dRmbJ09fu51s9KLgQj57W01" target="_blank" rel="noreferrer" style={{textDecoration:"none",display:"block",background:"linear-gradient(145deg,rgba(176,138,78,0.16),rgba(176,138,78,0.07))",border:"1px solid rgba(176,138,78,0.4)",borderRadius:14,padding:"24px 16px",textAlign:"center",position:"relative"}}>
             <div style={{position:"absolute",top:-12,left:"50%",transform:"translateX(-50%)",background:G.gold,color:"#0F1A24",fontSize:9,fontFamily:"Cinzel,serif",padding:"3px 12px",borderRadius:20,whiteSpace:"nowrap",fontWeight:700,letterSpacing:"0.08em"}}>BEST VALUE</div>
             <div style={{fontFamily:"Cinzel,serif",fontSize:12,color:G.gold,letterSpacing:"0.1em",marginBottom:10}}>Full Year Access</div>
-            <div style={{fontSize:32,fontWeight:600,color:T.cream,fontFamily:"Cinzel,serif",marginBottom:4}}>$39</div>
-            <div style={{fontSize:12,color:T.muted,marginBottom:16}}>full year &#8212; $3.25/mo</div>
+            <div style={{fontSize:32,fontWeight:600,color:G.cream,fontFamily:"Cinzel,serif",marginBottom:4}}>$39</div>
+            <div style={{fontSize:12,color:G.muted,marginBottom:16}}>full year &#8212; $3.25/mo</div>
             <div style={{background:"rgba(176,138,78,0.3)",border:"1px solid rgba(176,138,78,0.45)",borderRadius:8,padding:"10px",fontSize:13,color:G.gold,fontFamily:"EB Garamond,Georgia,serif"}}>Subscribe &#8594;</div>
           </a>
         </div>
         <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:12,padding:"16px",marginBottom:20,textAlign:"center"}}>
-          <p style={{fontSize:13,color:T.muted,lineHeight:1.7,margin:0}}>After subscribing, check your email for your unique access code. Then return here and tap <strong style={{color:T.text}}>Create Account</strong> to get started.</p>
+          <p style={{fontSize:13,color:G.muted,lineHeight:1.7,margin:0}}>After subscribing, check your email for your unique access code. Then return here and tap <strong style={{color:G.text}}>Create Account</strong> to get started.</p>
         </div>
-        <button onClick={()=>setScreen("login")} style={{width:"100%",background:"transparent",border:"none",color:T.muted,padding:"8px",cursor:"pointer",fontSize:13,fontFamily:"EB Garamond,Georgia,serif"}}>
+        <button onClick={()=>setScreen("login")} style={{width:"100%",background:"transparent",border:"none",color:G.muted,padding:"8px",cursor:"pointer",fontSize:13,fontFamily:"EB Garamond,Georgia,serif"}}>
           &#8592; Back to Sign In
         </button>
       </div>
@@ -262,8 +262,8 @@ function AuthScreen({onAuth}) {
   return (
     <div style={wrap()}>
       <div style={{fontSize:36,color:G.gold,marginBottom:12}}><img src="/icon.png" alt="⚓" style={{width:56,height:56,borderRadius:12,boxShadow:"0 4px 16px rgba(0,0,0,0.25)"}}/></div>
-      <div style={{fontFamily:"Cinzel,serif",fontSize:22,fontWeight:600,color:T.cream,marginBottom:4}}>Create Your Account</div>
-      <div style={{fontSize:12,color:T.muted,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:28}}>Enter your access code to get started</div>
+      <div style={{fontFamily:"Cinzel,serif",fontSize:22,fontWeight:600,color:G.cream,marginBottom:4}}>Create Your Account</div>
+      <div style={{fontSize:12,color:G.muted,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:28}}>Enter your access code to get started</div>
       <div style={card}>
         {error && <p style={{fontSize:12,color:G.red,marginBottom:12,textAlign:"center"}}>{error}</p>}
         {msg && <p style={{fontSize:12,color:G.green,marginBottom:12,textAlign:"center"}}>{msg}</p>}
@@ -276,7 +276,7 @@ function AuthScreen({onAuth}) {
         <button onClick={handleSignup} disabled={loading} style={{width:"100%",background:"linear-gradient(135deg,rgba(180,140,60,0.3),rgba(180,140,60,0.15))",border:"1px solid "+G.goldB,color:G.gold,padding:"12px",borderRadius:8,cursor:"pointer",fontSize:14,fontFamily:"Cinzel,serif",letterSpacing:"0.1em",marginBottom:12}}>
           {loading ? "Creating account..." : "Create Account"}
         </button>
-        <div style={{textAlign:"center",fontSize:13,color:T.muted,marginTop:4}}>
+        <div style={{textAlign:"center",fontSize:13,color:G.muted,marginTop:4}}>
           Already have an account?{" "}
           <span onClick={()=>{setScreen("login");setError("");}} style={{color:G.gold,cursor:"pointer"}}>Sign in</span>
           {" · "}
@@ -669,7 +669,7 @@ export default function AnchoredSteps() {
   if (loading) return (
     <div style={{minHeight:"100vh",background:G.bg,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:16}}>
       <div style={{fontSize:32,color:G.gold}}><img src="/icon.png" alt="⚓" style={{width:52,height:52,borderRadius:11,boxShadow:"0 4px 14px rgba(0,0,0,0.2)"}}/></div>
-      <div style={{fontFamily:"Cinzel,serif",color:T.muted,fontSize:12,letterSpacing:"0.1em"}}>Loading your journal...</div>
+      <div style={{fontFamily:"Cinzel,serif",color:G.muted,fontSize:12,letterSpacing:"0.1em"}}>Loading your journal...</div>
     </div>
   );
 
