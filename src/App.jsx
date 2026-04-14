@@ -292,6 +292,7 @@ export default function AnchoredSteps() {
   const [quizResult, setQuizResult] = useState(null);
   const [quizVerse, setQuizVerse] = useState(null);
   const [openAuthor, setOpenAuthor] = useState(null);
+  const [openCrossRef, setOpenCrossRef] = useState(null);
   const [communityInput, setCommunityInput] = useState("");
   const [communityDone, setCommunityDone] = useState(false);
 
@@ -714,7 +715,8 @@ export default function AnchoredSteps() {
                     <div style={{background:G.bgCard,border:"1px solid "+G.border,borderRadius:10,padding:"14px 18px",marginBottom:16}}>
                       <div style={{fontSize:10,color:G.muted,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:12,fontFamily:"Cinzel,serif"}}>Cross References &#8212; Dig Deeper</div>
                       {crossRefs.map((s,i) => {
-                        const [crOpen, setCrOpen] = React.useState(false);
+                        const crKey = wk + "_cr_" + i;
+                        const crOpen = openCrossRef === crKey;
                         return (
                           <div key={i} style={{borderLeft:"2px solid rgba(176,138,78,0.35)",paddingLeft:14,marginBottom:i<crossRefs.length-1?18:0,paddingBottom:i<crossRefs.length-1?18:0,borderBottom:i<crossRefs.length-1?"1px solid rgba(255,255,255,0.04)":"none"}}>
                             <p style={{fontSize:16,color:G.text,lineHeight:1.8,fontStyle:"italic",marginBottom:8}}>
@@ -723,7 +725,7 @@ export default function AnchoredSteps() {
                             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:8}}>
                               <span style={{fontSize:11,color:G.gold,fontFamily:"Cinzel,serif",letterSpacing:"0.08em",textTransform:"uppercase"}}>{s.ref}</span>
                               <div style={{display:"flex",gap:6}}>
-                                {s.context && <button onClick={()=>setCrOpen(o=>!o)} style={{background:"rgba(176,138,78,0.1)",border:"1px solid rgba(176,138,78,0.25)",color:G.gold,padding:"2px 10px",borderRadius:12,cursor:"pointer",fontSize:11,fontFamily:"Cinzel,serif"}}>{crOpen?"▲ Hide":"▼ Context"}</button>}
+                                {s.context && <button onClick={()=>setOpenCrossRef(crOpen?null:crKey)} style={{background:"rgba(176,138,78,0.1)",border:"1px solid rgba(176,138,78,0.25)",color:G.gold,padding:"2px 10px",borderRadius:12,cursor:"pointer",fontSize:11,fontFamily:"Cinzel,serif"}}>{crOpen?"▲ Hide":"▼ Context"}</button>}
                                 <button onClick={() => startQuiz(s)} style={{background:entries.find(e=>e.field_key==="mem_"+s.ref)?"rgba(124,146,132,0.15)":G.purpleF,border:"1px solid "+(entries.find(e=>e.field_key==="mem_"+s.ref)?G.greenB:G.purpleB),color:entries.find(e=>e.field_key==="mem_"+s.ref)?G.green:G.purple,padding:"2px 10px",borderRadius:12,cursor:"pointer",fontSize:11,fontFamily:"Cinzel,serif"}}>
                                   {entries.find(e=>e.field_key==="mem_"+s.ref) ? "✓ Memorized" : "✦ Memorize"}
                                 </button>
