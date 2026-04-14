@@ -245,7 +245,7 @@ function AuthScreen({onAuth}) {
           Already have an account?{" "}
           <span onClick={()=>{setScreen("login");setError("");}} style={{color:G.gold,cursor:"pointer"}}>Sign in</span>
           {" · "}
-          <span onClick={()=>window.open("https://eloraradiance.com/anchored-steps-app","_blank")} style={{color:G.muted,cursor:"pointer",textDecoration:"underline"}}>View Plans</span>
+          <span onClick={()=>{setScreen("plans");setError("");}} style={{color:G.gold,cursor:"pointer"}}>View Plans</span>
         </div>
       </div>
     </div>
@@ -277,6 +277,20 @@ export default function AnchoredSteps() {
   const [openCrossRef, setOpenCrossRef] = useState(null);
   const [communityInput, setCommunityInput] = useState("");
   const [communityDone, setCommunityDone] = useState(false);
+  // Settings
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem("as_dark") !== "false");
+  const [fontSize, setFontSize] = useState(() => parseInt(localStorage.getItem("as_fontsize") || "16"));
+  // Search
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  // Bookmarks
+  const [bookmarks, setBookmarks] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("as_bookmarks") || "[]"); } catch { return []; }
+  });
+  // Share
+  const [shareVerse, setShareVerse] = useState(null);
+  // Year review
+  const [showYearReview, setShowYearReview] = useState(false);
 
   // Safety check for data loading
   if (!window.__APPDATA__) {
@@ -329,12 +343,22 @@ export default function AnchoredSteps() {
       const isGoodTime = (hour >= 7 && hour <= 9) || (hour >= 19 && hour <= 21);
 
       if (isGoodTime) {
-        const messages = [
+        // Monday = weekly encouragement with opening verse
+        const isMonday = now.getDay() === 1;
+        const currentWeek = ALL_WEEKS.find(w => w.week === (parseInt(localStorage.getItem("as_current_week") || "1")));
+        const weekTitle = currentWeek ? currentWeek.title : "Faith in Action";
+        const weekVerse = currentWeek ? currentWeek.scriptures[0].ref : "";
+
+        const messages = isMonday ? [
+          "New week. New theme: " + weekTitle + ". " + weekVerse + " is waiting for you.",
+          "This week: " + weekTitle + ". Your journal is ready. Walk steadily.",
+        ] : [
           "Your journal is waiting. A few minutes with God changes everything.",
           "Walk steadily today. Your anchor holds.",
-          "Ready for your time with God? Week " + (parseInt(localStorage.getItem("anchored_week") || "1")) + " is waiting.",
+          "Ready for your time with God? Week " + (parseInt(localStorage.getItem("as_current_week") || "1")) + " is waiting.",
           "Stay anchored. Open your journal today.",
           "Faith grows through intention. Your journal is ready.",
+          "Presence over perfection. Come as you are.",
         ];
         const msg = messages[Math.floor(Math.random() * messages.length)];
 
@@ -473,6 +497,87 @@ export default function AnchoredSteps() {
   const weeksActive = ALL_WEEKS.filter(w => daysComplete(w.week) > 0).length;
   const streak = calcStreak(entries);
 
+  // Bookmarks
+  const toggleBookmark = (verse, weekNum, sectionId) => {
+    const key = verse.ref + "_" + weekNum;
+    const exists = bookmarks.find(b => b.key === key);
+    let updated;
+    if (exists) {
+      updated = bookmarks.filter(b => b.key !== key);
+    } else {
+      updated = [...bookmarks, { key, ref: verse.ref, text: verse.text, week: weekNum, section: sectionId, date: new Date().toLocaleDateString() }];
+    }
+    setBookmarks(updated);
+    localStorage.setItem("as_bookmarks", JSON.stringify(updated));
+  };
+  const isBookmarked = (ref, weekNum) => bookmarks.some(b => b.key === ref + "_" + weekNum);
+
+  // Search
+  const doSearch = (q) => {
+    setSearchQuery(q);
+    if (!q.trim()) { setSearchResults([]); return; }
+    const term = q.toLowerCase();
+    const results = [];
+    ALL_WEEKS.forEach(w => {
+      w.scriptures.forEach(s => {
+        if (s.text.toLowerCase().includes(term) || s.ref.toLowerCase().includes(term)) {
+          results.push({ type: "scripture", week: w.week, title: w.title, ref: s.ref, text: s.text });
+        }
+      });
+      if (w.studyNotes.toLowerCase().includes(term)) {
+        results.push({ type: "study", week: w.week, title: w.title, text: w.studyNotes.substring(0,120)+"..." });
+      }
+      w.reflectionPrompts.forEach(p => {
+        if (p.toLowerCase().includes(term)) {
+          results.push({ type: "reflect", week: w.week, title: w.title, text: p });
+        }
+      });
+    });
+    setSearchResults(results.slice(0, 30));
+  };
+
+  const exportPDF = () => {
+    const printWindow = window.open("", "_blank");
+    const allWeeksData = ALL_WEEKS.map(w => {
+      const wEntries = entries.filter(e => e.week === w.week);
+      const has = wEntries.some(e => (e.field_value||"").trim());
+      if (!has) return null;
+      let html = `<div style="page-break-inside:avoid;margin-bottom:32px;">
+        <h2 style="font-family:Georgia,serif;color:#0F1A24;border-bottom:2px solid #B08A4E;padding-bottom:8px;">Week ${w.week}: ${w.title}</h2>`;
+      const studyE = wEntries.find(e=>e.field_key==="study");
+      if(studyE?.field_value) html += `<h3 style="color:#B08A4E;font-family:Georgia,serif;">Study Notes</h3><p style="line-height:1.8;">${studyE.field_value}</p>`;
+      [0,1,2,3].forEach(i=>{
+        const rf = wEntries.find(e=>e.field_key==="rf"+i);
+        if(rf?.field_value) html += `<h3 style="color:#B08A4E;font-family:Georgia,serif;">Reflection ${i+1}</h3><p style="line-height:1.8;">${rf.field_value}</p>`;
+      });
+      const rfjE = wEntries.find(e=>e.field_key==="rfj");
+      if(rfjE?.field_value) html += `<h3 style="color:#B08A4E;font-family:Georgia,serif;">Journal</h3><p style="line-height:1.8;">${rfjE.field_value}</p>`;
+      const appE = wEntries.find(e=>e.field_key==="apply");
+      if(appE?.field_value) html += `<h3 style="color:#B08A4E;font-family:Georgia,serif;">Application</h3><p style="line-height:1.8;">${appE.field_value}</p>`;
+      const prayE = wEntries.find(e=>e.field_key==="prayer");
+      if(prayE?.field_value) html += `<h3 style="color:#B08A4E;font-family:Georgia,serif;">Prayer</h3><p style="line-height:1.8;font-style:italic;">${prayE.field_value}</p>`;
+      html += '</div>';
+      return html;
+    }).filter(Boolean).join('<hr style="border-color:#B08A4E;margin:32px 0;">');
+
+    printWindow.document.write(`<!DOCTYPE html><html><head>
+      <title>Anchored Steps Faith Journal</title>
+      <style>
+        body{font-family:Georgia,serif;max-width:700px;margin:0 auto;padding:40px;color:#1a1a1a;line-height:1.7;}
+        h1{font-size:28px;color:#0F1A24;text-align:center;margin-bottom:4px;}
+        .sub{text-align:center;color:#B08A4E;font-size:13px;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:40px;}
+        @media print{body{padding:20px}}
+      </style>
+    </head><body>
+      <h1>Anchored Steps</h1>
+      <p class="sub">52 Weeks of Faith in Action &mdash; My Personal Journal</p>
+      <p style="text-align:center;color:#888;font-size:12px;margin-bottom:40px;">Generated ${new Date().toLocaleDateString()}</p>
+      ${allWeeksData}
+    </body></html>`);
+    printWindow.document.close();
+    setTimeout(() => printWindow.print(), 500);
+  };
+
   const exportNotes = () => {
     let out = "ANCHORED STEPS\nGenerated " + new Date().toLocaleDateString() + "\n\n";
     ALL_WEEKS.forEach(w => {
@@ -536,14 +641,30 @@ export default function AnchoredSteps() {
   // ── Not logged in
   if (!session) return <AuthScreen onAuth={() => window.location.reload()} />;
 
+  // Theme-aware colors
+  const T = darkMode ? {
+    bg:"#0F1A24",bgCard:"rgba(255,255,255,0.035)",text:"#E6DED0",
+    muted:"#A8B3BC",border:"rgba(255,255,255,0.08)",cream:"#F5F1E8",
+    cardBg:"linear-gradient(145deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))",
+    inputBg:"rgba(255,255,255,0.035)",inputBorder:"rgba(176,138,78,0.18)",
+  } : {
+    bg:"#F5F1E8",bgCard:"rgba(0,0,0,0.04)",text:"#2C2416",
+    muted:"#8B7355",border:"rgba(0,0,0,0.1)",cream:"#1A1208",
+    cardBg:"linear-gradient(145deg,rgba(255,255,255,0.9),rgba(255,255,255,0.7))",
+    inputBg:"rgba(255,255,255,0.8)",inputBorder:"rgba(176,138,78,0.3)",
+  };
+
+  // Apply font size to body
+  document.body.style.fontSize = fontSize + "px";
+
   const week = ALL_WEEKS.find(w => w.week === wk);
-  const INP = {width:"100%",background:"rgba(255,255,255,0.035)",border:"1px solid rgba(176,138,78,0.18)",borderRadius:12,color:G.text,fontSize:17,lineHeight:1.9,padding:"16px 18px",fontFamily:"EB Garamond,Georgia,serif",outline:"none",boxShadow:"inset 0 1px 0 rgba(255,255,255,0.02)"};
+  const INP = {width:"100%",background:T.inputBg,border:"1px solid "+T.inputBorder,borderRadius:12,color:T.text,fontSize:fontSize+1,lineHeight:1.9,padding:"16px 18px",fontFamily:"EB Garamond,Georgia,serif",outline:"none",boxShadow:"inset 0 1px 0 rgba(255,255,255,0.02)"};
   const LBL = {fontSize:10,color:G.gold,letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:12,display:"block",fontFamily:"Cinzel,serif"};
   const kwList = week ? week.keywords.split(",").map(k => k.trim()) : [];
   const crossRefs = CROSS_REFS[wk] || [];
 
   return (
-    <div style={{minHeight:"100vh",background:"linear-gradient(155deg,#0F1A24 0%,#1A2A38 50%,#0F1A24 100%)"}}>
+    <div style={{minHeight:"100vh",background:darkMode?"linear-gradient(155deg,#0F1A24 0%,#1A2A38 50%,#0F1A24 100%)":"linear-gradient(155deg,#F5F1E8 0%,#EDE5D4 50%,#F5F1E8 100%)"}}>
 
       <header style={{position:"sticky",top:0,zIndex:100,background:"rgba(15,26,36,0.88)",backdropFilter:"blur(14px)",borderBottom:"1px solid rgba(176,138,78,0.14)"}}>
         <div style={{borderBottom:"1px solid rgba(180,140,60,0.12)",padding:"10px 18px"}}>
@@ -560,8 +681,8 @@ export default function AnchoredSteps() {
           </div>
         </div>
         <div style={{display:"flex",justifyContent:"center",gap:4,padding:"7px 18px"}}>
-          {[["journal","Journal"],["contents","Contents"],["progress","Progress"],["export","Export"]].map(([v,l]) => (
-            <button key={v} onClick={() => setView(v)} style={{background:view===v?G.goldF:"transparent",border:"1px solid "+(view===v?G.goldB:"transparent"),color:view===v?G.gold:G.muted,padding:"5px 14px",borderRadius:6,cursor:"pointer",fontSize:11,fontFamily:"Cinzel,serif",letterSpacing:"0.07em",transition:"all .2s"}}>{l}</button>
+          {[["journal","Journal"],["search","Search"],["bookmarks","Saved"],["contents","Contents"],["progress","Progress"],["settings","Settings"]].map(([v,l]) => (
+            <button key={v} onClick={() => setView(v)} style={{background:view===v?"linear-gradient(135deg,rgba(176,138,78,0.18),rgba(176,138,78,0.07))":"transparent",border:"1px solid "+(view===v?"rgba(176,138,78,0.4)":"transparent"),color:view===v?G.gold:G.muted,padding:"5px 12px",borderRadius:8,cursor:"pointer",fontSize:11,fontFamily:"Cinzel,serif",letterSpacing:"0.06em",transition:"all .2s"}}>{l}</button>
           ))}
         </div>
       </header>
@@ -606,7 +727,15 @@ export default function AnchoredSteps() {
                           <div style={{flex:1}}>
                             <p style={{fontSize:19,lineHeight:1.95,color:G.cream,fontStyle:"italic",marginBottom:12,letterSpacing:"0.01em"}}>{s.text}</p>
                             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:8,marginBottom:ae?8:0}}>
-                              <span style={{fontSize:11,color:G.gold,fontFamily:"Cinzel,serif",fontWeight:500,letterSpacing:"0.08em",textTransform:"uppercase"}}>{s.ref}</span>
+                              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                                <span style={{fontSize:11,color:G.gold,fontFamily:"Cinzel,serif",fontWeight:500,letterSpacing:"0.08em",textTransform:"uppercase"}}>{s.ref}</span>
+                                <button onClick={() => {
+                                  const q = s.ref.replace(/\s*\([^)]+\)/g,"").trim();
+                                  window.open("https://www.bible.com/bible/116/"+encodeURIComponent(q.replace(/ /g,"."))+".NLT","_blank");
+                                }} style={{background:"transparent",border:"1px solid rgba(176,138,78,0.2)",color:G.muted,padding:"1px 8px",borderRadius:10,cursor:"pointer",fontSize:10,fontFamily:"Cinzel,serif"}}>
+                                  🎧 Hear
+                                </button>
+                              </div>
                               <div style={{display:"flex",gap:6}}>
                                 {ae && <button onClick={() => setOpenAuthor(isOpen?null:ak)} style={{background:isOpen?"rgba(180,140,60,0.15)":G.goldF,border:"1px solid "+G.goldB,color:G.gold,padding:"2px 10px",borderRadius:12,cursor:"pointer",fontSize:11,fontFamily:"Cinzel,serif"}}>{isOpen?"▲ Hide":"▼ Context"}</button>}
                                 <button onClick={() => startQuiz(s)} style={{background:entries.find(e=>e.field_key==="mem_"+s.ref)?"rgba(120,184,120,0.15)":G.purpleF,border:"1px solid "+(entries.find(e=>e.field_key==="mem_"+s.ref)?G.greenB:G.purpleB),color:entries.find(e=>e.field_key==="mem_"+s.ref)?G.green:G.purple,padding:"2px 10px",borderRadius:12,cursor:"pointer",fontSize:11,fontFamily:"Cinzel,serif"}}>
@@ -711,6 +840,12 @@ export default function AnchoredSteps() {
                                 {s.context && <button onClick={()=>setOpenCrossRef(crOpen?null:crKey)} style={{background:"rgba(176,138,78,0.1)",border:"1px solid rgba(176,138,78,0.25)",color:G.gold,padding:"2px 10px",borderRadius:12,cursor:"pointer",fontSize:11,fontFamily:"Cinzel,serif"}}>{crOpen?"▲ Hide":"▼ Context"}</button>}
                                 <button onClick={() => startQuiz(s)} style={{background:entries.find(e=>e.field_key==="mem_"+s.ref)?"rgba(124,146,132,0.15)":G.purpleF,border:"1px solid "+(entries.find(e=>e.field_key==="mem_"+s.ref)?G.greenB:G.purpleB),color:entries.find(e=>e.field_key==="mem_"+s.ref)?G.green:G.purple,padding:"2px 10px",borderRadius:12,cursor:"pointer",fontSize:11,fontFamily:"Cinzel,serif"}}>
                                   {entries.find(e=>e.field_key==="mem_"+s.ref) ? "✓ Memorized" : "✦ Memorize"}
+                                </button>
+                                <button onClick={() => toggleBookmark(s, wk, "scripture")} style={{background:isBookmarked(s.ref,wk)?"rgba(176,138,78,0.2)":"transparent",border:"1px solid "+(isBookmarked(s.ref,wk)?"rgba(176,138,78,0.4)":G.border),color:isBookmarked(s.ref,wk)?G.gold:G.muted,padding:"2px 10px",borderRadius:12,cursor:"pointer",fontSize:11}}>
+                                  {isBookmarked(s.ref,wk) ? "★" : "☆"}
+                                </button>
+                                <button onClick={() => setShareVerse(s)} style={{background:"transparent",border:"1px solid "+G.border,color:G.muted,padding:"2px 10px",borderRadius:12,cursor:"pointer",fontSize:11}}>
+                                  ↗
                                 </button>
                               </div>
                             </div>
@@ -835,8 +970,12 @@ export default function AnchoredSteps() {
                   {wk === 52 && (
                     <div style={{textAlign:"center",padding:"32px 24px",background:"linear-gradient(145deg,rgba(176,138,78,0.14),rgba(176,138,78,0.05))",border:"1px solid rgba(176,138,78,0.3)",borderRadius:16,marginTop:16,boxShadow:"0 8px 32px rgba(0,0,0,0.15)"}}>
                       <div style={{fontSize:22,marginBottom:7}}><img src="/icon.png" alt="⚓" style={{width:48,height:48,borderRadius:12,boxShadow:"0 4px 16px rgba(0,0,0,0.2)"}}/></div>
-                      <div style={{fontFamily:"Cinzel,serif",fontSize:16,color:G.cream,marginBottom:5}}>You Have Finished Well</div>
-                      <div style={{fontSize:13,color:G.muted,fontStyle:"italic"}}>Walk steadily. Stay anchored. Trust God with every step.</div>
+                      <div style={{fontFamily:"Cinzel,serif",fontSize:18,color:G.cream,marginBottom:8,letterSpacing:"0.04em"}}>You Have Finished Well</div>
+                      <div style={{fontSize:15,color:G.muted,fontStyle:"italic",marginBottom:20,lineHeight:1.7}}>Walk steadily. Stay anchored. Trust God with every step.</div>
+                      <button onClick={() => setShowYearReview(true)}
+                        style={{background:"linear-gradient(135deg,rgba(176,138,78,0.35),rgba(176,138,78,0.15))",border:"1px solid rgba(176,138,78,0.5)",color:G.gold,padding:"13px 28px",borderRadius:12,cursor:"pointer",fontSize:14,fontFamily:"Cinzel,serif",letterSpacing:"0.08em"}}>
+                        View Your Year in Review ✦
+                      </button>
                     </div>
                   )}
                   <SaveBtn onSave={save} flash={flash} />
@@ -932,20 +1071,250 @@ export default function AnchoredSteps() {
           </div>
         )}
 
+        {view === "search" && (
+          <div className="fi">
+            <h2 style={{fontFamily:"Cinzel,serif",fontSize:20,color:T.cream,marginBottom:4}}>Search</h2>
+            <p style={{fontSize:14,color:G.muted,fontStyle:"italic",marginBottom:16}}>Search across all 52 weeks of Scripture, study notes, and reflections.</p>
+            <input
+              value={searchQuery}
+              onChange={e => doSearch(e.target.value)}
+              placeholder="Search verses, topics, keywords..."
+              style={{...INP,marginBottom:20,fontSize:15}}
+              autoFocus
+            />
+            {searchQuery && (
+              <div>
+                <div style={{fontSize:11,color:G.gold,fontFamily:"Cinzel,serif",letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:14}}>{searchResults.length} Results</div>
+                {searchResults.length === 0 && <p style={{fontSize:15,color:G.muted,fontStyle:"italic"}}>No results found. Try a different search term.</p>}
+                {searchResults.map((r,i) => (
+                  <div key={i} onClick={() => { goWk(r.week); setSec(r.type === "scripture" ? "scripture" : r.type === "study" ? "study" : "reflect"); setView("journal"); }}
+                    style={{background:T.cardBg,border:"1px solid "+T.border,borderRadius:12,padding:"14px 16px",marginBottom:10,cursor:"pointer",transition:"all .2s"}}>
+                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+                      <span style={{fontSize:10,color:G.gold,fontFamily:"Cinzel,serif",letterSpacing:"0.1em",textTransform:"uppercase"}}>{r.type === "scripture" ? "📖 Scripture" : r.type === "study" ? "📝 Study" : "🪞 Reflection"}</span>
+                      <span style={{fontSize:10,color:G.muted}}>Week {r.week}: {r.title}</span>
+                    </div>
+                    {r.ref && <div style={{fontSize:12,color:G.gold,fontFamily:"Cinzel,serif",marginBottom:4}}>{r.ref}</div>}
+                    <p style={{fontSize:14,color:T.text,lineHeight:1.65,margin:0}}>{r.text.substring(0,120)}{r.text.length>120?"...":""}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+            {!searchQuery && (
+              <div style={{textAlign:"center",padding:"40px 0"}}>
+                <div style={{fontSize:36,marginBottom:12}}>🔍</div>
+                <p style={{fontSize:15,color:G.muted,fontStyle:"italic"}}>Start typing to search your journal...</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {view === "bookmarks" && (
+          <div className="fi">
+            <h2 style={{fontFamily:"Cinzel,serif",fontSize:20,color:T.cream,marginBottom:4}}>Saved Verses</h2>
+            <p style={{fontSize:14,color:G.muted,fontStyle:"italic",marginBottom:20}}>Verses you&#8217;ve bookmarked for quick reference.</p>
+            {bookmarks.length === 0 ? (
+              <div style={{textAlign:"center",padding:"40px 0"}}>
+                <div style={{fontSize:36,marginBottom:12}}>☆</div>
+                <p style={{fontSize:15,color:G.muted,fontStyle:"italic"}}>No saved verses yet. Tap ☆ on any scripture to save it here.</p>
+              </div>
+            ) : (
+              <div>
+                {bookmarks.map((b,i) => (
+                  <div key={i} style={{background:T.cardBg,border:"1px solid rgba(176,138,78,0.25)",borderRadius:14,padding:"18px 20px",marginBottom:12}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+                      <span style={{fontSize:11,color:G.gold,fontFamily:"Cinzel,serif",letterSpacing:"0.08em",textTransform:"uppercase"}}>{b.ref}</span>
+                      <div style={{display:"flex",gap:8}}>
+                        <button onClick={() => { goWk(b.week); setSec("scripture"); setView("journal"); }}
+                          style={{background:"transparent",border:"1px solid rgba(176,138,78,0.25)",color:G.gold,padding:"2px 10px",borderRadius:10,cursor:"pointer",fontSize:11,fontFamily:"Cinzel,serif"}}>Go →</button>
+                        <button onClick={() => toggleBookmark(b, b.week, b.section)}
+                          style={{background:"transparent",border:"none",color:G.red,cursor:"pointer",fontSize:14,padding:"2px 6px"}}>×</button>
+                      </div>
+                    </div>
+                    <p style={{fontSize:16,color:T.text,fontStyle:"italic",lineHeight:1.8,margin:"0 0 6px"}}>&#8220;{b.text}&#8221;</p>
+                    <div style={{fontSize:11,color:G.muted}}>Week {b.week} · Saved {b.date}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {view === "settings" && (
+          <div className="fi">
+            <h2 style={{fontFamily:"Cinzel,serif",fontSize:20,color:T.cream,marginBottom:4}}>Settings</h2>
+            <p style={{fontSize:14,color:G.muted,fontStyle:"italic",marginBottom:24}}>Customize your journal experience.</p>
+
+            {/* Appearance */}
+            <div style={{background:T.cardBg,border:"1px solid "+T.border,borderRadius:14,padding:"20px",marginBottom:14}}>
+              <div style={{fontSize:11,color:G.gold,fontFamily:"Cinzel,serif",letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:16}}>Appearance</div>
+
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+                <div>
+                  <div style={{fontSize:15,color:T.text,marginBottom:2}}>Theme</div>
+                  <div style={{fontSize:12,color:G.muted}}>{darkMode ? "Dark mode" : "Light mode"}</div>
+                </div>
+                <button onClick={() => { const n = !darkMode; setDarkMode(n); localStorage.setItem("as_dark",String(n)); }}
+                  style={{background:darkMode?"rgba(176,138,78,0.2)":"rgba(0,0,0,0.08)",border:"1px solid "+(darkMode?"rgba(176,138,78,0.4)":"rgba(0,0,0,0.15)"),borderRadius:50,padding:"8px 18px",cursor:"pointer",color:darkMode?G.gold:"#5a4a2a",fontFamily:"Cinzel,serif",fontSize:12,letterSpacing:"0.06em"}}>
+                  {darkMode ? "🌙 Dark" : "☀️ Light"}
+                </button>
+              </div>
+
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div>
+                  <div style={{fontSize:15,color:T.text,marginBottom:2}}>Font Size</div>
+                  <div style={{fontSize:12,color:G.muted}}>{fontSize}px</div>
+                </div>
+                <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                  <button onClick={() => { const n=Math.max(13,fontSize-1); setFontSize(n); localStorage.setItem("as_fontsize",String(n)); }}
+                    style={{background:"transparent",border:"1px solid "+T.border,color:T.text,width:32,height:32,borderRadius:8,cursor:"pointer",fontSize:16}}>−</button>
+                  <span style={{fontSize:14,color:T.text,fontFamily:"Cinzel,serif",minWidth:32,textAlign:"center"}}>{fontSize}</span>
+                  <button onClick={() => { const n=Math.min(22,fontSize+1); setFontSize(n); localStorage.setItem("as_fontsize",String(n)); }}
+                    style={{background:"transparent",border:"1px solid "+T.border,color:T.text,width:32,height:32,borderRadius:8,cursor:"pointer",fontSize:16}}>+</button>
+                </div>
+              </div>
+            </div>
+
+            {/* Referral */}
+            <div style={{background:T.cardBg,border:"1px solid "+T.border,borderRadius:14,padding:"20px",marginBottom:14}}>
+              <div style={{fontSize:11,color:G.gold,fontFamily:"Cinzel,serif",letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:16}}>Refer a Friend</div>
+              <p style={{fontSize:14,color:T.text,lineHeight:1.7,marginBottom:14}}>Share Anchored Steps with someone you know. When they subscribe using your referral link, you both benefit from the journey.</p>
+              <div style={{background:"rgba(176,138,78,0.08)",border:"1px solid rgba(176,138,78,0.2)",borderRadius:10,padding:"12px 16px",marginBottom:12,fontFamily:"Cinzel,serif",fontSize:13,color:G.gold,letterSpacing:"0.06em",textAlign:"center",wordBreak:"break-all"}}>
+                anchored-steps.vercel.app?ref={profile?.id?.slice(0,8) || "friend"}
+              </div>
+              <button onClick={() => {
+                const link = "https://anchored-steps.vercel.app?ref=" + (profile?.id?.slice(0,8) || "friend");
+                const msg = "I've been using Anchored Steps — a 52-week digital faith journal. Walk steadily with God this year. " + link;
+                if(navigator.share){ navigator.share({text: msg}); }
+                else { navigator.clipboard.writeText(link).then(()=>alert("Link copied!")); }
+              }} style={{width:"100%",background:"linear-gradient(135deg,rgba(176,138,78,0.2),rgba(176,138,78,0.08))",border:"1px solid rgba(176,138,78,0.3)",color:G.gold,padding:"12px",borderRadius:10,cursor:"pointer",fontSize:13,fontFamily:"Cinzel,serif",letterSpacing:"0.08em"}}>
+                Share Your Referral Link ↗
+              </button>
+            </div>
+
+            {/* Upgrade */}
+            {profile?.plan === "weekly" && (
+              <div style={{background:"linear-gradient(145deg,rgba(176,138,78,0.12),rgba(176,138,78,0.04))",border:"1px solid rgba(176,138,78,0.35)",borderRadius:14,padding:"20px",marginBottom:14}}>
+                <div style={{fontSize:11,color:G.gold,fontFamily:"Cinzel,serif",letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:12}}>Upgrade Your Plan</div>
+                <p style={{fontSize:14,color:T.text,lineHeight:1.7,marginBottom:14}}>Switch to Full Year Access for $39 — just $3.25/month for the complete year.</p>
+                <a href="https://buy.stripe.com/dRmbJ09fu51s9KLgQj57W01" target="_blank" rel="noreferrer"
+                  style={{display:"block",background:"linear-gradient(135deg,rgba(176,138,78,0.35),rgba(176,138,78,0.15))",border:"1px solid rgba(176,138,78,0.5)",color:G.gold,padding:"13px",borderRadius:10,textAlign:"center",textDecoration:"none",fontFamily:"Cinzel,serif",fontSize:13,letterSpacing:"0.08em"}}>
+                  Upgrade to Full Year Access — $39 &#8594;
+                </a>
+              </div>
+            )}
+
+            {/* Account */}
+            <div style={{background:T.cardBg,border:"1px solid "+T.border,borderRadius:14,padding:"20px",marginBottom:14}}>
+              <div style={{fontSize:11,color:G.gold,fontFamily:"Cinzel,serif",letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:16}}>Account</div>
+              <div style={{fontSize:14,color:T.text,marginBottom:4}}>Signed in as</div>
+              <div style={{fontSize:13,color:G.muted,marginBottom:16}}>{profile?.email}</div>
+              <div style={{fontSize:14,color:T.text,marginBottom:4}}>Plan</div>
+              <div style={{fontSize:13,color:G.gold,fontFamily:"Cinzel,serif",marginBottom:20}}>{profile?.plan === "annual" ? "Full Year Access" : "Monthly"}</div>
+              <button onClick={signOut} style={{width:"100%",background:"transparent",border:"1px solid "+T.border,color:G.muted,padding:"11px",borderRadius:8,cursor:"pointer",fontSize:13,fontFamily:"EB Garamond,Georgia,serif"}}>Sign Out</button>
+            </div>
+          </div>
+        )}
+
         {view === "export" && (
           <div className="fi">
-            <h2 style={{fontFamily:"Cinzel,serif",fontSize:20,color:G.cream,marginBottom:8}}>Export Your Journal</h2>
-            <p style={{fontSize:13,color:G.muted,fontStyle:"italic",lineHeight:1.6,marginBottom:22}}>Download everything you have written this year.</p>
-            <div style={{background:"linear-gradient(145deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))",border:"1px solid rgba(176,138,78,0.18)",borderRadius:16,padding:"32px",textAlign:"center",boxShadow:"0 8px 24px rgba(0,0,0,0.1)"}}>
-              <div style={{fontSize:32,marginBottom:12}}>📄</div>
-              <div style={{fontFamily:"Cinzel,serif",fontSize:15,color:G.cream,marginBottom:8}}>Your Complete Faith Journal</div>
-              <p style={{fontSize:13,color:G.muted,lineHeight:1.7,marginBottom:20}}>All study notes, reflections, prayers, and tracker entries.</p>
-              <button onClick={exportNotes} style={{background:"linear-gradient(135deg,rgba(176,138,78,0.28),rgba(176,138,78,0.12))",border:"1px solid rgba(176,138,78,0.4)",color:G.gold,padding:"14px 36px",borderRadius:12,cursor:"pointer",fontSize:14,fontFamily:"Cinzel,serif",letterSpacing:"0.1em",boxShadow:"0 4px 16px rgba(0,0,0,0.1)"}}>&#8595; Download Journal (.txt)</button>
+            <h2 style={{fontFamily:"Cinzel,serif",fontSize:20,color:T.cream,marginBottom:4}}>Export Your Journal</h2>
+            <p style={{fontSize:14,color:G.muted,fontStyle:"italic",lineHeight:1.6,marginBottom:24}}>Your journal entries belong to you. Download them anytime.</p>
+            <div style={{display:"grid",gap:14}}>
+              <div style={{background:T.cardBg,border:"1px solid rgba(176,138,78,0.25)",borderRadius:16,padding:"24px",textAlign:"center",boxShadow:"0 8px 24px rgba(0,0,0,0.1)"}}>
+                <div style={{fontSize:28,marginBottom:10}}>📄</div>
+                <div style={{fontFamily:"Cinzel,serif",fontSize:14,color:T.cream,marginBottom:6}}>PDF Journal</div>
+                <p style={{fontSize:13,color:G.muted,lineHeight:1.6,marginBottom:16}}>A beautifully formatted PDF — perfect for printing or saving.</p>
+                <button onClick={exportPDF} style={{background:"linear-gradient(135deg,rgba(176,138,78,0.28),rgba(176,138,78,0.12))",border:"1px solid rgba(176,138,78,0.4)",color:G.gold,padding:"12px 28px",borderRadius:10,cursor:"pointer",fontSize:13,fontFamily:"Cinzel,serif",letterSpacing:"0.08em"}}>&#8595; Export as PDF</button>
+              </div>
+              <div style={{background:T.cardBg,border:"1px solid "+T.border,borderRadius:16,padding:"24px",textAlign:"center"}}>
+                <div style={{fontSize:28,marginBottom:10}}>📝</div>
+                <div style={{fontFamily:"Cinzel,serif",fontSize:14,color:T.cream,marginBottom:6}}>Plain Text</div>
+                <p style={{fontSize:13,color:G.muted,lineHeight:1.6,marginBottom:16}}>Simple text file — easy to read, copy, or archive anywhere.</p>
+                <button onClick={exportNotes} style={{background:"transparent",border:"1px solid "+T.border,color:G.muted,padding:"12px 28px",borderRadius:10,cursor:"pointer",fontSize:13,fontFamily:"Cinzel,serif",letterSpacing:"0.08em"}}>&#8595; Export as .txt</button>
+              </div>
             </div>
           </div>
         )}
 
       </main>
+
+      {/* Year in Review Modal */}
+      {showYearReview && (() => {
+        const totalEntries = entries.length;
+        const weeksComplete = ALL_WEEKS.filter(w => {
+          return entries.some(e => e.week === w.week && (e.field_value||"").trim());
+        }).length;
+        const versesMemorized = entries.filter(e => e.field_key.startsWith("mem_") && e.field_value === "1").length;
+        const prayersWritten = entries.filter(e => e.field_key === "prayer" && (e.field_value||"").trim()).length;
+        const totalDays = entries.filter(e => e.field_key.startsWith("day_")).length;
+        return (
+          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:24,overflowY:"auto"}} onClick={()=>setShowYearReview(false)}>
+            <div style={{background:"linear-gradient(145deg,#0F1A24,#1A2A38)",border:"1px solid rgba(176,138,78,0.4)",borderRadius:20,padding:32,maxWidth:420,width:"100%",boxShadow:"0 20px 60px rgba(0,0,0,0.6)",maxHeight:"90vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
+              <div style={{textAlign:"center",marginBottom:24}}>
+                <img src="/icon.png" alt="" style={{width:56,height:56,borderRadius:14,marginBottom:12}}/>
+                <div style={{fontFamily:"Cinzel,serif",fontSize:11,color:G.gold,letterSpacing:"0.16em",textTransform:"uppercase",marginBottom:6}}>Your Year in Review</div>
+                <h2 style={{fontFamily:"Cinzel,serif",fontSize:22,color:G.cream,fontWeight:500,margin:0}}>52 Weeks of Faith</h2>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}>
+                {[[weeksComplete,"Weeks Completed","📖"],[versesMemorized,"Verses Memorized","✦"],[prayersWritten,"Prayers Written","🙏"],[totalDays,"Days Active","🔥"]].map(([val,lbl,icon],i)=>(
+                  <div key={i} style={{background:"rgba(176,138,78,0.08)",border:"1px solid rgba(176,138,78,0.2)",borderRadius:12,padding:"18px 14px",textAlign:"center"}}>
+                    <div style={{fontSize:24,marginBottom:6}}>{icon}</div>
+                    <div style={{fontSize:28,fontWeight:600,color:G.cream,fontFamily:"Cinzel,serif",marginBottom:4}}>{val}</div>
+                    <div style={{fontSize:11,color:G.muted,letterSpacing:"0.06em"}}>{lbl}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{background:"rgba(176,138,78,0.06)",border:"1px solid rgba(176,138,78,0.15)",borderRadius:12,padding:"18px",marginBottom:20,textAlign:"center"}}>
+                <p style={{fontSize:16,color:G.cream,fontStyle:"italic",lineHeight:1.8,margin:"0 0 10px"}}>
+                  &#8220;Well done, good and faithful servant.&#8221;
+                </p>
+                <p style={{fontSize:11,color:G.gold,fontFamily:"Cinzel,serif",letterSpacing:"0.1em",margin:0,textTransform:"uppercase"}}>Matthew 25:21</p>
+              </div>
+              <button onClick={() => {
+                const text = "I just completed 52 weeks of Anchored Steps — a year of faith, Scripture, and intentional time with God. " + weeksComplete + " weeks. " + versesMemorized + " verses memorized. " + prayersWritten + " prayers written. Walk steadily. Stay anchored. anchored-steps.vercel.app";
+                if(navigator.share){ navigator.share({text}); }
+                else { navigator.clipboard.writeText(text).then(()=>alert("Copied!")); }
+              }} style={{width:"100%",background:"linear-gradient(135deg,rgba(176,138,78,0.3),rgba(176,138,78,0.12))",border:"1px solid rgba(176,138,78,0.45)",color:G.gold,padding:"13px",borderRadius:10,cursor:"pointer",fontSize:13,fontFamily:"Cinzel,serif",letterSpacing:"0.08em",marginBottom:10}}>
+                Share Your Achievement ↗
+              </button>
+              <button onClick={()=>setShowYearReview(false)} style={{width:"100%",background:"transparent",border:"none",color:G.muted,cursor:"pointer",fontSize:13,fontFamily:"EB Garamond,Georgia,serif"}}>Close</button>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Share Verse Modal */}
+      {shareVerse && (
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:24}} onClick={()=>setShareVerse(null)}>
+          <div style={{background:"linear-gradient(145deg,#0F1A24,#1A2A38)",border:"1px solid rgba(176,138,78,0.4)",borderRadius:20,padding:28,maxWidth:380,width:"100%",boxShadow:"0 20px 60px rgba(0,0,0,0.5)"}} onClick={e=>e.stopPropagation()}>
+            <div style={{textAlign:"center",marginBottom:20}}>
+              <img src="/icon.png" alt="" style={{width:36,height:36,borderRadius:8,marginBottom:8}}/>
+              <div style={{fontFamily:"Cinzel,serif",fontSize:11,color:G.gold,letterSpacing:"0.14em",textTransform:"uppercase"}}>Share This Verse</div>
+            </div>
+            <div style={{background:"rgba(176,138,78,0.08)",border:"1px solid rgba(176,138,78,0.2)",borderRadius:12,padding:"18px",marginBottom:20,textAlign:"center"}}>
+              <p style={{fontSize:17,color:G.cream,fontStyle:"italic",lineHeight:1.85,marginBottom:10}}>&#8220;{shareVerse.text}&#8221;</p>
+              <p style={{fontSize:11,color:G.gold,fontFamily:"Cinzel,serif",letterSpacing:"0.1em",textTransform:"uppercase"}}>{shareVerse.ref}</p>
+              <p style={{fontSize:10,color:G.muted,marginTop:6}}>— Anchored Steps · eloraradiance.com</p>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
+              <a href={"https://www.facebook.com/sharer/sharer.php?u="+encodeURIComponent("https://anchored-steps.vercel.app")+"&quote="+encodeURIComponent('"'+shareVerse.text+'" — '+shareVerse.ref+' | Anchored Steps')} target="_blank" rel="noreferrer"
+                style={{display:"block",background:"rgba(24,119,242,0.15)",border:"1px solid rgba(24,119,242,0.3)",borderRadius:10,padding:"12px",textAlign:"center",textDecoration:"none",color:"#4A9FFF",fontFamily:"Cinzel,serif",fontSize:12,letterSpacing:"0.06em"}}>
+                Facebook
+              </a>
+              <button onClick={()=>{
+                const text = '"'+shareVerse.text+'" — '+shareVerse.ref+'
+
+Anchored Steps · anchored-steps.vercel.app';
+                if(navigator.share){navigator.share({text});}
+                else{navigator.clipboard.writeText(text).then(()=>alert("Copied to clipboard!"));}
+              }} style={{background:"linear-gradient(135deg,rgba(176,138,78,0.2),rgba(176,138,78,0.08))",border:"1px solid rgba(176,138,78,0.3)",borderRadius:10,padding:"12px",cursor:"pointer",color:G.gold,fontFamily:"Cinzel,serif",fontSize:12,letterSpacing:"0.06em"}}>
+                Instagram / Copy
+              </button>
+            </div>
+            <button onClick={()=>setShareVerse(null)} style={{width:"100%",background:"transparent",border:"none",color:G.muted,cursor:"pointer",fontSize:13,fontFamily:"EB Garamond,Georgia,serif"}}>Close</button>
+          </div>
+        </div>
+      )}
 
       {/* Next Step floating button */}
       {view === "journal" && week && sec !== "weekEnd" && (
