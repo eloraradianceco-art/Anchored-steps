@@ -1282,9 +1282,7 @@ export default function AnchoredSteps() {
                 Copy Text
               </button>
               <button onClick={()=>{
-                const text = "“"+shareVerse.text+"” — "+shareVerse.ref+"
-
-Anchored Steps · anchored-steps.vercel.app";
+                const text = shareVerse.text + " - " + shareVerse.ref + " | Anchored Steps - anchored-steps.vercel.app"
                 if(navigator.share){navigator.share({title:"Anchored Steps",text});}
                 else{navigator.clipboard.writeText(text).then(()=>alert("Copied!"));}
               }} style={{background:"linear-gradient(135deg,rgba(176,138,78,0.2),rgba(176,138,78,0.08))",border:"1px solid rgba(176,138,78,0.3)",borderRadius:10,padding:"12px",cursor:"pointer",color:G.gold,fontFamily:"Cinzel,serif",fontSize:12,letterSpacing:"0.06em"}}>
