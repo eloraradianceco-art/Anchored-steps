@@ -39,22 +39,28 @@ function highlightKeywords(text, keywords, darkMode) {
     const validKws = keywords.filter(k => k && k.trim().length > 2);
     if (validKws.length === 0) return text;
     const sorted = [...validKws].sort((a,b) => b.length - a.length);
-    const escaped = sorted.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
-    const regex = new RegExp("(" + escaped.join("|") + ")", "gi");
-    const parts = text.split(regex);
-    return parts.map((part, i) => {
-      if (validKws.some(kw => kw.toLowerCase() === part.toLowerCase())) {
-        return (
-          <mark key={i} style={{background:"rgba(176,138,78,0.35)",color:darkMode?"#F5F1E8":"#2C2416",borderRadius:3,padding:"0 3px",fontStyle:"inherit",fontWeight:500}}>
-            {part}
-          </mark>
-        );
+    const parts = [];
+    let remaining = text;
+    let ki = 0;
+    while (remaining.length > 0) {
+      let found = false;
+      for (const kw of sorted) {
+        const idx = remaining.toLowerCase().indexOf(kw.toLowerCase());
+        if (idx === 0) {
+          parts.push(<mark key={ki++} style={{background:"rgba(176,138,78,0.35)",color:darkMode?"#F5F1E8":"#2C2416",borderRadius:3,padding:"0 3px",fontStyle:"inherit",fontWeight:500}}>{remaining.slice(0,kw.length)}</mark>);
+          remaining = remaining.slice(kw.length);
+          found = true; break;
+        } else if (idx > 0) {
+          parts.push(<span key={ki++}>{remaining.slice(0,idx)}</span>);
+          parts.push(<mark key={ki++} style={{background:"rgba(176,138,78,0.35)",color:darkMode?"#F5F1E8":"#2C2416",borderRadius:3,padding:"0 3px",fontStyle:"inherit",fontWeight:500}}>{remaining.slice(idx,idx+kw.length)}</mark>);
+          remaining = remaining.slice(idx+kw.length);
+          found = true; break;
+        }
       }
-      return <span key={i}>{part}</span>;
-    });
-  } catch(e) {
-    return text;
-  }
+      if (!found) { parts.push(<span key={ki++}>{remaining}</span>); remaining = ""; }
+    }
+    return parts;
+  } catch(e) { return text; }
 }
 
 function calcStreak(entries) {
