@@ -758,6 +758,7 @@ export default function AnchoredSteps() {
             <div style={{background:"rgba(255,255,255,0.05)",borderRadius:3,height:3,marginBottom:20,overflow:"hidden"}}>
               <div style={{height:"100%",background:"linear-gradient(90deg,#B08A4E,#D6B97A)",width:((wk/52)*100)+"%",transition:"width .5s ease"}} />
             </div>
+            </div>
 
             <div style={{display:"flex",gap:3,marginBottom:20,flexWrap:"wrap"}}>
               {SECTIONS.map(s => (
@@ -1020,9 +1021,10 @@ export default function AnchoredSteps() {
                   }
                 </div>
               )}
-
             </div>
           </div>
+        </div>
+      </div>
         )}
 
         {view === "contents" && (
