@@ -150,20 +150,26 @@ function LexiconPanel({ entry, lexWord, speaking, onClose, onSpeak, G, T }) {
 }
 
 function ContextModal({ ae, onClose, G }) {
+  if (!ae) return null;
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:24}} onClick={onClose}>
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:24}} onClick={onClose}>
       <div style={{background:"linear-gradient(145deg,#0F1A24,#1A2A38)",border:"1px solid rgba(176,138,78,0.4)",borderRadius:20,padding:28,maxWidth:420,width:"100%",boxShadow:"0 20px 60px rgba(0,0,0,0.5)",maxHeight:"85vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
           <div style={{fontSize:10,color:G.gold,fontFamily:"Cinzel,serif",letterSpacing:"0.14em",textTransform:"uppercase"}}>Scripture Context</div>
           <button onClick={onClose} style={{background:"transparent",border:"none",color:G.muted,cursor:"pointer",fontSize:20,lineHeight:1}}>&#215;</button>
         </div>
+        {ae.ref && (
+          <div style={{background:"rgba(176,138,78,0.08)",border:"1px solid rgba(176,138,78,0.2)",borderRadius:10,padding:"10px 14px",marginBottom:20}}>
+            <span style={{fontSize:11,color:G.gold,fontFamily:"Cinzel,serif",letterSpacing:"0.08em",textTransform:"uppercase"}}>{ae.ref}</span>
+          </div>
+        )}
         {[["Author",ae.author],["Location",ae.location],["Audience",ae.audience],["Commentary",ae.commentary]].map(([lb,val]) => val ? (
-          <div key={lb} style={{marginBottom:18,paddingBottom:18,borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
-            <div style={{fontSize:10,color:G.gold,fontFamily:"Cinzel,serif",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:8}}>{lb}</div>
-            <p style={{fontSize:15,color:G.text,lineHeight:1.85,margin:0}}>{val}</p>
+          <div key={lb} style={{marginBottom:16,paddingBottom:16,borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
+            <div style={{fontSize:10,color:G.gold,fontFamily:"Cinzel,serif",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:7}}>{lb}</div>
+            <p style={{fontSize:15,color:"#E6DED0",lineHeight:1.85,margin:0}}>{val}</p>
           </div>
         ) : null)}
-        <button onClick={onClose} style={{width:"100%",background:"transparent",border:"1px solid rgba(255,255,255,0.08)",color:G.muted,padding:"11px",borderRadius:8,cursor:"pointer",fontSize:13,fontFamily:"EB Garamond,Georgia,serif",marginTop:4}}>Close</button>
+        <button onClick={onClose} style={{width:"100%",marginTop:4,background:"transparent",border:"1px solid rgba(255,255,255,0.08)",color:G.muted,padding:"11px",borderRadius:8,cursor:"pointer",fontSize:13,fontFamily:"EB Garamond,Georgia,serif"}}>Close</button>
       </div>
     </div>
   );
@@ -817,7 +823,7 @@ export default function AnchoredSteps() {
                               <span style={{fontSize:11,color:G.gold,fontFamily:"Cinzel,serif",fontWeight:500,letterSpacing:"0.08em",textTransform:"uppercase"}}>{s.ref}</span>
                               <div style={{display:"flex",gap:6}}>
                                 {ae && (
-                                  <button onClick={()=>setOpenAuthor(ak)} style={{background:"rgba(176,138,78,0.12)",border:"1px solid rgba(176,138,78,0.3)",color:G.gold,padding:"2px 10px",borderRadius:12,cursor:"pointer",fontSize:11,fontFamily:"Cinzel,serif"}}>&#9660; Context</button>
+                                  <button onClick={()=>setOpenAuthor(ae)} style={{background:"rgba(176,138,78,0.12)",border:"1px solid rgba(176,138,78,0.3)",color:G.gold,padding:"2px 10px",borderRadius:12,cursor:"pointer",fontSize:11,fontFamily:"Cinzel,serif"}}>&#9660; Context</button>
                                 )}
                                 <button onClick={()=>startQuiz(s)} style={{background:entries.find(e=>e.field_key==="mem_"+s.ref)?"rgba(120,184,120,0.15)":G.purpleF,border:"1px solid "+(entries.find(e=>e.field_key==="mem_"+s.ref)?G.greenB:G.purpleB),color:entries.find(e=>e.field_key==="mem_"+s.ref)?G.green:G.purple,padding:"2px 10px",borderRadius:12,cursor:"pointer",fontSize:11,fontFamily:"Cinzel,serif"}}>
                                   {entries.find(e=>e.field_key==="mem_"+s.ref)?"✓ Memorized":"✦ Memorize"}
@@ -1272,8 +1278,8 @@ export default function AnchoredSteps() {
 
 
       {/* Scripture Context Modal - Author, Location, Audience, Commentary */}
-      {openAuthor && AUTHOR_DATA[openAuthor] && (
-        <ContextModal ae={AUTHOR_DATA[openAuthor]} onClose={()=>setOpenAuthor(null)} G={G} />
+      {openAuthor && (
+        <ContextModal ae={openAuthor} onClose={()=>setOpenAuthor(null)} G={G} />
       )}
 
       {/* Memorize Quiz Modal - renders over any section */}
