@@ -644,7 +644,21 @@ export default function AnchoredSteps() {
       const blob = await res.blob();
       const file = new File([blob], "anchored-steps-verse.png", { type: "image/png" });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: "Anchored Steps", text: shareVerse.ref + " — Anchored Steps" });
+        const weekTitle = week ? week.title : "";
+          const caption = [
+            "“" + shareVerse.text + "”",
+            "— " + shareVerse.ref,
+            "",
+            weekTitle ? "This week: " + weekTitle + "." : "",
+            "Reading through Anchored Steps — 52 weeks of faith, Scripture, and intentional time with God.",
+            "",
+            "anchored-steps.vercel.app",
+          ].filter(Boolean).join("\n");
+          await navigator.share({
+            files: [file],
+            title: "Anchored Steps",
+            text: caption,
+          });
       } else {
         const a = document.createElement("a");
         a.href = dataUrl;
