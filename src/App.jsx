@@ -33,13 +33,13 @@ const LBL_STYLE = {fontSize:10,color:G.gold,letterSpacing:"0.15em",textTransform
 
 function todayStr() { return new Date().toISOString().split("T")[0]; }
 
-function highlightKeywords(text, keywords) {
+function highlightKeywords(text, keywords, darkMode) {
   try {
     if (!text || !keywords || keywords.length === 0) return text;
     const validKws = keywords.filter(k => k && k.trim().length > 2);
     if (validKws.length === 0) return text;
     const sorted = [...validKws].sort((a,b) => b.length - a.length);
-    const escaped = sorted.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    const escaped = sorted.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
     const regex = new RegExp("(" + escaped.join("|") + ")", "gi");
     const parts = text.split(regex);
     return parts.map((part, i) => {
@@ -801,37 +801,44 @@ export default function AnchoredSteps() {
                   {week.scriptures.map((s,i) => {
                     const ak = wk+"_"+i;
                     const ae = (AUTHOR_DATA[wk]||[])[i];
-                    const isOpen = openAuthor === ak;
                     return (
-                      <div key={i} style={{background:i===0?"linear-gradient(145deg,rgba(176,138,78,0.14),rgba(176,138,78,0.05))":"linear-gradient(145deg,rgba(176,138,78,0.07),rgba(176,138,78,0.02))",border:"1px solid rgba(176,138,78,0.3)",borderRadius:16,padding:"22px 24px",marginBottom:14,boxShadow:"0 8px 24px rgba(0,0,0,0.12)"}}>
-                        <div style={{display:"flex",gap:10}}>
-                          <span style={{color:G.gold,fontSize:32,lineHeight:1,opacity:.3,flexShrink:0,marginTop:0,fontFamily:"Georgia,serif"}}>&#8220;</span>
-                          <div style={{flex:1}}>
-                            <p style={{fontSize:19,lineHeight:1.95,color:T.cream,fontStyle:"italic",marginBottom:12,letterSpacing:"0.01em"}}>{s.text}</p>
-                            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:8,marginBottom:ae?8:0}}>
-                              <span style={{fontSize:11,color:G.gold,fontFamily:"Cinzel,serif",fontWeight:500,letterSpacing:"0.08em",textTransform:"uppercase"}}>{s.ref}</span>
-                              <div style={{display:"flex",gap:6}}>
-                                {ae && <button onClick={() => setOpenAuthor(ak)} style={{background:"rgba(176,138,78,0.12)",border:"1px solid rgba(176,138,78,0.3)",color:G.gold,padding:"2px 10px",borderRadius:12,cursor:"pointer",fontSize:11,fontFamily:"Cinzel,serif"}}>▼ Context</button>}
-                                <button onClick={() => startQuiz(s)} style={{background:entries.find(e=>e.field_key==="mem_"+s.ref)?"rgba(120,184,120,0.15)":G.purpleF,border:"1px solid "+(entries.find(e=>e.field_key==="mem_"+s.ref)?G.greenB:G.purpleB),color:entries.find(e=>e.field_key==="mem_"+s.ref)?G.green:G.purple,padding:"2px 10px",borderRadius:12,cursor:"pointer",fontSize:11,fontFamily:"Cinzel,serif"}}>
-                                  {entries.find(e=>e.field_key==="mem_"+s.ref) ? "✓ Memorized" : "✦ Memorize"}
-                                </button>
-                                <button onClick={() => toggleBookmark(s, wk, "scripture")} style={{background:isBookmarked(s.ref,wk)?"rgba(176,138,78,0.2)":"transparent",border:"1px solid "+(isBookmarked(s.ref,wk)?"rgba(176,138,78,0.4)":G.border),color:isBookmarked(s.ref,wk)?G.gold:G.muted,padding:"2px 10px",borderRadius:12,cursor:"pointer",fontSize:13}}>
-                                  {isBookmarked(s.ref,wk) ? "★" : "☆"}
-                                </button>
-                                <button onClick={() => setShareVerse(s)} style={{background:"transparent",border:"1px solid "+G.border,color:G.muted,padding:"2px 8px",borderRadius:12,cursor:"pointer",fontSize:11}}>&#8599;</button>
-                              </div>
+                    <div key={i} style={{
+                      background:i===0?"linear-gradient(145deg,rgba(176,138,78,0.14),rgba(176,138,78,0.05))":"linear-gradient(145deg,rgba(176,138,78,0.07),rgba(176,138,78,0.02))",
+                      border:"1px solid rgba(176,138,78,0.3)",
+                      borderRadius:16,padding:"22px 24px",marginBottom:14,
+                      boxShadow:"0 8px 24px rgba(0,0,0,0.12)",
+                    }}>
+                      <div style={{display:"flex",gap:10}}>
+                        <span style={{color:G.gold,fontSize:32,lineHeight:1,opacity:.3,flexShrink:0,marginTop:0,fontFamily:"Georgia,serif"}}>&#8220;</span>
+                        <div style={{flex:1}}>
+                          <p style={{fontSize:19,lineHeight:1.95,color:T.cream,fontStyle:"italic",marginBottom:12,letterSpacing:"0.01em"}}>{s.text}</p>
+                          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:8}}>
+                            <span style={{fontSize:11,color:G.gold,fontFamily:"Cinzel,serif",fontWeight:500,letterSpacing:"0.08em",textTransform:"uppercase"}}>{s.ref}</span>
+                            <div style={{display:"flex",gap:6}}>
+                              {ae && (
+                                <button onClick={()=>setOpenAuthor(ak)} style={{background:"rgba(176,138,78,0.12)",border:"1px solid rgba(176,138,78,0.3)",color:G.gold,padding:"2px 10px",borderRadius:12,cursor:"pointer",fontSize:11,fontFamily:"Cinzel,serif"}}>&#9660; Context</button>
+                              )}
+                              <button onClick={()=>startQuiz(s)} style={{background:entries.find(e=>e.field_key==="mem_"+s.ref)?"rgba(120,184,120,0.15)":G.purpleF,border:"1px solid "+(entries.find(e=>e.field_key==="mem_"+s.ref)?G.greenB:G.purpleB),color:entries.find(e=>e.field_key==="mem_"+s.ref)?G.green:G.purple,padding:"2px 10px",borderRadius:12,cursor:"pointer",fontSize:11,fontFamily:"Cinzel,serif"}}>
+                                {entries.find(e=>e.field_key==="mem_"+s.ref)?"✓ Memorized":"✦ Memorize"}
+                              </button>
+                              <button onClick={()=>toggleBookmark(s,wk,"scripture")} style={{background:isBookmarked(s.ref,wk)?"rgba(176,138,78,0.2)":"transparent",border:"1px solid "+(isBookmarked(s.ref,wk)?"rgba(176,138,78,0.4)":G.border),color:isBookmarked(s.ref,wk)?G.gold:T.muted,padding:"2px 10px",borderRadius:12,cursor:"pointer",fontSize:13}}>
+                                {isBookmarked(s.ref,wk)?"★":"☆"}
+                              </button>
+                              <button onClick={()=>setShareVerse(s)} style={{background:"transparent",border:"1px solid "+G.border,color:T.muted,padding:"2px 8px",borderRadius:12,cursor:"pointer",fontSize:11}}>&#8599;</button>
                             </div>
+                          </div>
+                        </div>
                       </div>
-                      );
-
-                </div>
-                  })}
+                    </div>
+                  );
+                })}
                   {EXCERPTS[wk] && (
                     <div style={{background:"linear-gradient(145deg,rgba(176,138,78,0.09),rgba(176,138,78,0.02))",border:"1px solid rgba(176,138,78,0.2)",borderRadius:14,padding:"20px 22px",marginBottom:14}}>
                       <div style={{fontSize:10,color:G.gold,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8,fontFamily:"Cinzel,serif"}}>From the Journal</div>
                       <p style={{fontSize:16,color:T.text,lineHeight:1.8,fontStyle:"italic"}}>{EXCERPTS[wk]}</p>
                     </div>
                   )}
+                </div>
               )}
 
               {sec === "verseMap" && (
@@ -871,7 +878,7 @@ export default function AnchoredSteps() {
                         return (
                           <div key={i} style={{borderLeft:"2px solid "+(darkMode?"rgba(176,138,78,0.35)":"rgba(176,138,78,0.5)"),paddingLeft:14,marginBottom:i<crossRefs.length-1?18:0,paddingBottom:i<crossRefs.length-1?18:0,borderBottom:i<crossRefs.length-1?"1px solid "+(darkMode?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.08)"):"none"}}>
                             <p style={{fontSize:16,color:T.text,lineHeight:1.8,fontStyle:"italic",marginBottom:8}}>
-                              {highlightKeywords(s.text, kwList)}
+                              {highlightKeywords(s.text, kwList, darkMode)}
                             </p>
                             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:8}}>
                               <span style={{fontSize:11,color:G.gold,fontFamily:"Cinzel,serif",letterSpacing:"0.08em",textTransform:"uppercase"}}>{s.ref}</span>
@@ -1042,8 +1049,6 @@ export default function AnchoredSteps() {
             </div>
           </div>
         </div>
-      </div>
-    </div>
         )}
 
         {view === "contents" && (
